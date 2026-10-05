@@ -54,6 +54,7 @@ function StageLayer({ i, progress }: { i: number; progress: MotionValue<number> 
 export function Process() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  const stageProgress = useTransform(scrollYProgress, [0, 0.86], [0, 1]);
   const thread = useTransform(scrollYProgress, [0, 0.85], [0, 1]);
   const teeDraw = useTransform(scrollYProgress, [0.5, 0.66], [0, 1]);
   const teeOpacity = useTransform(scrollYProgress, [0.33, 0.5, 0.66, 0.7], [0, 1, 1, 0]);
@@ -67,7 +68,7 @@ export function Process() {
     <section id="process" ref={ref} className="relative h-[800vh]">
       <div className="grain sticky top-0 h-screen overflow-hidden">
         {STAGES.map((_, i) => (
-          <StageLayer key={i} i={i} progress={useTransform(scrollYProgress, [0, 0.86], [0, 1])} />
+          <StageLayer key={i} i={i} progress={stageProgress} />
         ))}
 
         <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
@@ -84,7 +85,7 @@ export function Process() {
         <motion.div style={{ opacity: reveal }} className="absolute inset-0 bg-background">
           <motion.img src={factory} alt="ZEVRAE production floor" loading="lazy" style={{ scale: factoryScale }} className="absolute inset-0 h-full w-full object-cover opacity-50" />
           <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background" />
-          <p className="tech absolute left-6 top-28 text-muted-foreground md:left-16">Facility / 01 — 240 machines / 1.2M units yearly</p>
+          <p className="tech absolute bottom-10 left-6 text-muted-foreground md:left-16">Facility / 01 — 240 machines / 1.2M units yearly</p>
         </motion.div>
 
         <div className="tech absolute left-6 top-28 text-muted-foreground md:left-16">
