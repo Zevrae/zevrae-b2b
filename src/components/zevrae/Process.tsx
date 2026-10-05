@@ -26,7 +26,7 @@ function StageLayer({ i, progress }: { i: number; progress: MotionValue<number> 
   const e = (i + 1) / STAGES.length;
   const opacity = useTransform(progress, [s - 0.04, s + 0.02, e - 0.02, e + 0.04], [0, 1, 1, 0]);
   const scale = useTransform(progress, [s, e], [1.12, 1]);
-  const st = STAGES[i];
+  const st = STAGES[i]!;
   return (
     <motion.div style={{ opacity }} className="absolute inset-0">
       <motion.img
