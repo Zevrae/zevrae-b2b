@@ -1,24 +1,39 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { Hero } from "@/components/zevrae/Hero";
+import { Process } from "@/components/zevrae/Process";
+import { Nav, ScrollThread, Reveal, Capabilities, Catalogue, Finale, Footer } from "@/components/zevrae/Sections";
+import { QuoteFlow } from "@/components/zevrae/QuoteFlow";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "ZEVRAE — Follow the Thread | Apparel Manufacturing" },
+      { name: "description", content: "ZEVRAE turns ideas into finished, branded garments. Bulk apparel, private label and custom manufacturing for modern brands." },
+      { property: "og:title", content: "ZEVRAE — Your Brand. Our Production." },
+      { property: "og:description", content: "Custom apparel manufacturing, private label and bulk production for modern brands." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
+  const [open, setOpen] = useState(false);
+  const start = () => setOpen(true);
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main id="top">
+      <Nav onStart={start} />
+      <ScrollThread />
+      <Hero />
+      <Process />
+      <Reveal onStart={start} />
+      <Capabilities />
+      <Catalogue onStart={start} />
+      <Finale onStart={start} />
+      <Footer />
+      <QuoteFlow open={open} onClose={() => setOpen(false)} />
+    </main>
   );
 }
