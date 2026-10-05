@@ -168,7 +168,7 @@ export function Capabilities() {
               className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 ${active === i ? "scale-100 opacity-100" : "scale-110 opacity-0"}`}
             />
           ))}
-          <span className="tech absolute bottom-4 left-4 bg-background px-2 py-1">{CAPS[active].n} / {CAPS[active].t}</span>
+          <span className="tech absolute bottom-4 left-4 bg-background px-2 py-1">{CAPS[active]!.n} / {CAPS[active]!.t}</span>
         </div>
       </div>
     </section>
