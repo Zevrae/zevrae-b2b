@@ -1,14 +1,11 @@
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { motion, useScroll } from "motion/react";
 import { Button } from "@/components/ui/button";
 import factory from "@/assets/factory.jpg";
 import label from "@/assets/label.jpg";
 import cut from "@/assets/cut.jpg";
 import pack from "@/assets/pack.jpg";
-import tee from "@/assets/tee.jpg";
-import hoodie from "@/assets/hoodie.jpg";
-import jacket from "@/assets/jacket.jpg";
-import fabric from "@/assets/fabric.jpg";
 
 type Open = { onStart: () => void };
 
@@ -22,7 +19,7 @@ export function Nav({ onStart }: Open) {
   }, []);
   const links = [
     ["Capabilities", "#capabilities"],
-    ["Products", "#products"],
+    ["Products", "/products"],
     ["Private label", "#capabilities"],
     ["Process", "#process"],
   ];
@@ -34,7 +31,7 @@ export function Nav({ onStart }: Open) {
         <a href="#top" className="font-expanded text-xl">Zevrae</a>
         <div className="tech hidden gap-8 md:flex">
           {links.map(([l, h]) => (
-            <a key={l} href={h} className="text-muted-foreground transition-colors hover:text-foreground">{l}</a>
+            h === "/products" ? <Link key={l} to="/products" className="text-muted-foreground transition-colors hover:text-foreground">{l}</Link> : <a key={l} href={h} className="text-muted-foreground transition-colors hover:text-foreground">{l}</a>
           ))}
         </div>
         <Button variant="industrial" size="sm" onClick={onStart}>Start a project</Button>
@@ -73,7 +70,7 @@ export function Reveal({ onStart }: Open) {
         <div className="flex flex-wrap gap-4 md:col-span-7 md:justify-end">
           <Button variant="industrial" size="xl" onClick={onStart}>Start a project</Button>
           <Button variant="industrial-ghost" size="xl" asChild>
-            <a href="#products">View catalogue</a>
+            <Link to="/products">View catalogue</Link>
           </Button>
         </div>
       </div>
@@ -107,10 +104,10 @@ function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
 
 function Stats() {
   const s = [
-    { n: 50, sfx: "", l: "Minimum order qty" },
-    { n: 240, sfx: "", l: "Production machines" },
-    { n: 21, sfx: "", l: "Days avg. lead time" },
-    { n: 380, sfx: "+", l: "Brands produced" },
+    { n: 4, sfx: "", l: "Product categories" },
+    { n: 5, sfx: "", l: "Available sizes" },
+    { n: 3, sfx: "", l: "Fabric options" },
+    { n: 4, sfx: "", l: "GSM options" },
   ];
   return (
     <div className="mt-24 grid grid-cols-2 border-t md:grid-cols-4">
@@ -168,75 +165,9 @@ export function Capabilities() {
               className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 ${active === i ? "scale-100 opacity-100" : "scale-110 opacity-0"}`}
             />
           ))}
-          <span className="tech absolute bottom-4 left-4 bg-background px-2 py-1">{CAPS[active]!.n} / {CAPS[active]!.t}</span>
+          <span className="tech absolute bottom-4 left-4 bg-background px-2 py-1">{CAPS[active]?.n} / {CAPS[active]?.t}</span>
         </div>
       </div>
-    </section>
-  );
-}
-
-const PRODUCTS = [
-  { t: "T-Shirt", img: tee, specs: ["180 GSM", "Combed cotton", "MOQ 100", "Custom print available"] },
-  { t: "Oversized T-Shirt", img: tee, specs: ["240 GSM", "Cotton", "MOQ 50", "Custom print available"] },
-  { t: "Hoodie", img: hoodie, specs: ["400 GSM", "Brushed fleece", "MOQ 50", "Embroidery available"] },
-  { t: "Sweatshirt", img: hoodie, specs: ["340 GSM", "French terry", "MOQ 50", "Custom print available"] },
-  { t: "Lower / Track Pants", img: jacket, specs: ["320 GSM", "Cotton / Poly", "MOQ 100", "Custom trims"] },
-  { t: "Jacket", img: jacket, specs: ["Nylon shell", "Lined", "MOQ 100", "Custom hardware"] },
-  { t: "Custom Apparel", img: fabric, specs: ["Your spec", "Any fabric", "MOQ on request", "Full development"] },
-];
-
-function ProductRow({ p, i, onStart }: { p: (typeof PRODUCTS)[number]; i: number; onStart: () => void }) {
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const move = (e: MouseEvent<HTMLDivElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    setTilt({ x: ((e.clientX - r.left) / r.width - 0.5) * 14, y: ((e.clientY - r.top) / r.height - 0.5) * 14 });
-  };
-  const flip = i % 2 === 1;
-  return (
-    <article className="grid items-center gap-10 border-t py-16 md:grid-cols-12">
-      <div
-        onMouseMove={move}
-        onMouseLeave={() => setTilt({ x: 0, y: 0 })}
-        className={`group relative aspect-[4/5] overflow-hidden bg-card md:col-span-6 ${flip ? "md:order-2 md:col-start-7" : ""}`}
-      >
-        <img
-          src={p.img}
-          alt={p.t}
-          loading="lazy"
-          style={{ transform: `translate(${tilt.x}px, ${tilt.y}px) scale(1.06)` }}
-          className="h-full w-full object-cover transition-transform duration-300 ease-out"
-        />
-        <span className="font-expanded pointer-events-none absolute inset-0 flex items-center justify-center text-4xl text-foreground/0 transition-colors duration-500 group-hover:text-foreground/90 mix-blend-difference">
-          Your brand
-        </span>
-      </div>
-      <div className={`md:col-span-5 ${flip ? "md:order-1" : "md:col-start-8"}`}>
-        <p className="tech text-muted-foreground">{String(i + 1).padStart(2, "0")} / {p.t}</p>
-        <h3 className="font-expanded mt-4 text-4xl md:text-6xl">{p.t}</h3>
-        <dl className="tech mt-10 border-t">
-          {p.specs.map((s) => (
-            <div key={s} className="flex justify-between border-b py-3">
-              <dt className="text-muted-foreground">—</dt>
-              <dd>{s}</dd>
-            </div>
-          ))}
-        </dl>
-        <Button variant="industrial" size="xl" className="mt-10" onClick={onStart}>Request quote</Button>
-      </div>
-    </article>
-  );
-}
-
-export function Catalogue({ onStart }: Open) {
-  return (
-    <section id="products" className="bg-background px-6 py-32 md:px-16">
-      <div className="flex items-end justify-between pb-10">
-        <h2 className="font-expanded text-[11vw] md:text-[6vw]">Catalogue</h2>
-        <p className="tech text-muted-foreground">Blanks / 07</p>
-      </div>
-      {PRODUCTS.map((p, i) => (
-        <ProductRow key={p.t} p={p} i={i} onStart={onStart} />
-      ))}
     </section>
   );
 }

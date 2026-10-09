@@ -8,12 +8,12 @@ import pack from "@/assets/pack.jpg";
 import factory from "@/assets/factory.jpg";
 
 const STAGES = [
-  { n: "01", name: "Fabric", img: fabric, specs: ["Material — 100% Combed cotton", "GSM — 180 / 240 / 320", "Color — Dyed to Pantone", "Quality — Pre-shrunk, bio-washed"] },
-  { n: "02", name: "Cut", img: cut, specs: ["Pattern — Graded XS–3XL", "Method — Automated + hand", "Tolerance — ±2mm", "Pieces — Body / Sleeve / Rib"] },
-  { n: "03", name: "Print", img: tee, specs: ["DTF", "DTG", "Screen", "Embroidery"] },
+  { n: "01", name: "Fabric", img: fabric, specs: ["100% Cotton / Dry Fit / Polycotton", "GSM — 160 / 170 / 180–200 / 200–220", "Custom colors — on request", "Fabric selection — confirm availability"] },
+  { n: "02", name: "Cut", img: cut, specs: ["Sizes — S / M / L / XL / XXL", "Pattern details — on inquiry", "Measurements — confirm availability", "Pieces — Body / Sleeve / Rib"] },
+  { n: "03", name: "Print", img: tee, specs: ["Printing requirements — on inquiry", "Embroidery — confirm availability"] },
   { n: "04", name: "Build", img: tee, specs: ["Sleeves", "Body", "Collar", "Stitching / Labels"] },
-  { n: "05", name: "Brand", img: label, specs: ["Custom labels", "Hang tags", "Packaging", "Custom prints"] },
-  { n: "06", name: "Pack", img: pack, specs: ["Fold", "Poly / Box", "Barcode", "Dispatch"] },
+  { n: "05", name: "Brand", img: label, specs: ["Branding requirements — on inquiry", "Labels / Packaging — confirm availability"] },
+  { n: "06", name: "Pack", img: pack, specs: ["Packaging requirements — on inquiry", "Dispatch schedule — confirm availability"] },
 ];
 
 const THREAD =
@@ -26,7 +26,8 @@ function StageLayer({ i, progress }: { i: number; progress: MotionValue<number> 
   const e = (i + 1) / STAGES.length;
   const opacity = useTransform(progress, [s - 0.04, s + 0.02, e - 0.02, e + 0.04], [0, 1, 1, 0]);
   const scale = useTransform(progress, [s, e], [1.12, 1]);
-  const st = STAGES[i]!;
+  const st = STAGES[i];
+  if (!st) return null;
   return (
     <motion.div style={{ opacity }} className="absolute inset-0">
       <motion.img
@@ -83,9 +84,9 @@ export function Process() {
         </svg>
 
         <motion.div style={{ opacity: reveal }} className="absolute inset-0 bg-background">
-          <motion.img src={factory} alt="ZEVRAE production floor" loading="lazy" style={{ scale: factoryScale }} className="absolute inset-0 h-full w-full object-cover opacity-50" />
+          <motion.img src={factory} alt="Apparel production visual reference" loading="lazy" style={{ scale: factoryScale }} className="absolute inset-0 h-full w-full object-cover opacity-50" />
           <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background" />
-          <p className="tech absolute bottom-10 left-6 text-muted-foreground md:left-16">Facility / 01 — 240 machines / 1.2M units yearly</p>
+          <p className="tech absolute bottom-10 left-6 text-muted-foreground md:left-16">Production / Visual reference</p>
         </motion.div>
 
         <div className="tech absolute left-6 top-28 text-muted-foreground md:left-16">
