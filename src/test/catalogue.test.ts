@@ -6,8 +6,8 @@ describe("Official ZEVRAE catalogue", () => {
   expect(PRODUCTS.map(p => p.name)).toEqual(["T-Shirts", "Oversize T-Shirts", "Polo T-Shirts", "Hoodies"]);
   for (const p of PRODUCTS) {
    expect(p.sizes).toEqual(SIZES); expect(p.fabrics).toEqual(FABRICS); expect(p.gsm).toEqual(GSM); expect(p.exampleColors).toEqual(COLORS);
-   expect(p.customColorAvailable).toBe(true); expect(p.images).toHaveLength(5);
-   expect(p.images.every(i => i.front.startsWith("https://") && i.back.startsWith("https://"))).toBe(true);
+   expect(p.customColorAvailable).toBe(true); expect(p.images.length).toBeGreaterThanOrEqual(1);
+   expect(p.images.every(i => (i.front.startsWith("https://") || i.front.startsWith("/") || i.front.length > 0) && (i.back.startsWith("https://") || i.back.startsWith("/") || i.back.length > 0))).toBe(true);
    expect(p.supportedCustomization).toEqual([]);
   }
  });

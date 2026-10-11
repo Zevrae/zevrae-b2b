@@ -1,9 +1,35 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import fittedHero from "@/assets/fitted-hero.webp";
+import hoodiesHero from "@/assets/hoodies-hero.webp";
+import oversizedHero from "@/assets/oversized-hero.webp";
+import poloHero from "@/assets/polo-hero.webp";
+
+const HERO_IMAGES = [fittedHero, hoodiesHero, oversizedHero, poloHero];
+const CYCLE_MS = 4500;
 
 export function Hero() {
   const pathRef = useRef<SVGPathElement>(null);
   const shadowRef = useRef<SVGPathElement>(null);
+  const [imgIndex, setImgIndex] = useState(0);
+  const [visible, setVisible] = useState(false);
 
+  // Fade-in on mount
+  useEffect(() => {
+    const t = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(t);
+  }, []);
+
+  // Auto-cycle images
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+    const id = setInterval(() => {
+      setImgIndex(i => (i + 1) % HERO_IMAGES.length);
+    }, CYCLE_MS);
+    return () => clearInterval(id);
+  }, []);
+
+  // Thread animation
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const mouse = { x: 720, y: 520, tx: 720, ty: 520 };
@@ -39,9 +65,45 @@ export function Hero() {
   }, []);
 
   return (
-    <section className="grain relative h-screen w-full overflow-hidden bg-background">
+    <section className="grain relative h-screen w-full overflow-hidden bg-black">
+      {/* ── Campaign image background – auto-cycling ── */}
+      {HERO_IMAGES.map((src, i) => (
+        <div
+          key={src}
+          aria-hidden
+          className="absolute inset-0 transition-opacity duration-[1400ms] ease-in-out"
+          style={{
+            opacity: visible && i === imgIndex ? 1 : 0,
+            backgroundImage: `url(${src})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center 30%",
+            /* dark overlay + bottom-fade so wordmark stays crisp */
+            /* layer: image at 22% opacity, then gradient to black at top/bottom */
+          }}
+        />
+      ))}
+
+      {/* ── Multi-layer overlay: preserves text legibility ── */}
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background: `
+            linear-gradient(to bottom,
+              rgba(0,0,0,0.72) 0%,
+              rgba(0,0,0,0.48) 35%,
+              rgba(0,0,0,0.42) 60%,
+              rgba(0,0,0,0.82) 100%
+            )
+          `,
+        }}
+      />
+      {/* Image opacity clamp — applied via mix-blend on the images above */}
+      <div aria-hidden className="absolute inset-0" style={{ background: "rgba(0,0,0,0.56)", mixBlendMode: "multiply" }} />
+
+      {/* ── Thread SVG — sits above overlays, below text ── */}
       <svg
-        className="pointer-events-none absolute inset-0 h-full w-full"
+        className="pointer-events-none absolute inset-0 z-10 h-full w-full"
         viewBox="0 0 1440 900"
         preserveAspectRatio="none"
         aria-hidden
@@ -58,7 +120,11 @@ export function Hero() {
         <path ref={pathRef} fill="none" stroke="url(#threadFade)" strokeWidth="1.3" className="thread-glow" />
       </svg>
 
-      <div className="relative z-10 flex h-full flex-col justify-center px-6 md:px-16 animate-fade-in [animation-duration:1.6s]">
+      {/* ── Hero text ── */}
+      <div
+        className="relative z-20 flex h-full flex-col justify-center px-6 md:px-16 animate-fade-in [animation-duration:1.6s]"
+        style={{ opacity: visible ? 1 : 0, transition: "opacity 1s ease" }}
+      >
         <h1 className="font-expanded text-[19vw] md:text-[13vw]">Zevrae</h1>
         <p className="tech mt-6 text-muted-foreground">Apparel manufacturing / Private label / B2B</p>
         <p className="mt-10 font-display text-lg font-semibold uppercase leading-tight tracking-wide md:text-2xl">
@@ -68,9 +134,26 @@ export function Hero() {
         </p>
       </div>
 
-      <div className="tech absolute bottom-8 left-6 right-6 z-10 flex justify-between text-muted-foreground md:left-16 md:right-16">
+      {/* ── Bottom labels ── */}
+      <div className="tech absolute bottom-8 left-6 right-6 z-20 flex justify-between text-muted-foreground md:left-16 md:right-16">
         <span>Follow the thread ↓</span>
         <span className="hidden md:inline">EST. MFG / 00</span>
+      </div>
+
+      {/* ── Image cycle indicator dots ── */}
+      <div className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 gap-2" aria-hidden>
+        {HERO_IMAGES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setImgIndex(i)}
+            aria-label={`Hero image ${i + 1}`}
+            className="h-px transition-all duration-500"
+            style={{
+              width: i === imgIndex ? "2rem" : "0.75rem",
+              background: i === imgIndex ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.3)",
+            }}
+          />
+        ))}
       </div>
     </section>
   );
