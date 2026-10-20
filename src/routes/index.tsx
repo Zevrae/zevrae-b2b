@@ -4,6 +4,7 @@ import { Hero } from "@/components/zevrae/Hero";
 import { Process } from "@/components/zevrae/Process";
 import { Nav, ScrollThread, Reveal, Capabilities, Finale, Footer } from "@/components/zevrae/Sections";
 import { Catalogue } from "@/components/zevrae/Catalogue";
+import { Reviews } from "@/components/zevrae/Reviews";
 import { QuoteFlow } from "@/components/zevrae/QuoteFlow";
 import { ContactModal } from "@/components/zevrae/ContactModal";
 
@@ -36,6 +37,7 @@ function Index() {
       <Reveal onStart={start} />
       <Capabilities />
       <Catalogue />
+      <Reviews />
       <Finale onContact={contact} />
       <Footer />
       <QuoteFlow open={open} onClose={() => setOpen(false)} />
