@@ -172,7 +172,12 @@ export function Capabilities() {
   );
 }
 
-export function Finale({ onStart }: Open) {
+type FinaleProps = {
+  onContact?: () => void;
+  onStart?: () => void;
+};
+
+export function Finale({ onContact, onStart }: FinaleProps) {
   return (
     <section className="bg-bone px-6 py-32 text-bone-foreground md:px-16 md:py-48">
       <h2 className="font-expanded text-[11vw] md:text-[8vw]">
@@ -183,10 +188,10 @@ export function Finale({ onStart }: Open) {
       <div className="mt-16 flex flex-wrap items-center justify-between gap-6">
         <p className="tech">One thread → One garment → One brand → Endless possibilities</p>
         <button
-          onClick={onStart}
+          onClick={onContact ?? onStart}
           className="btn-industrial h-14 rounded-none border-bone-foreground bg-bone-foreground px-8 font-mono text-xs uppercase tracking-[0.2em] text-bone before:bg-bone hover:text-bone-foreground"
         >
-          Start a project →
+          Contact Us →
         </button>
       </div>
     </section>

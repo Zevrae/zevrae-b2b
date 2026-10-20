@@ -5,6 +5,7 @@ import { Process } from "@/components/zevrae/Process";
 import { Nav, ScrollThread, Reveal, Capabilities, Finale, Footer } from "@/components/zevrae/Sections";
 import { Catalogue } from "@/components/zevrae/Catalogue";
 import { QuoteFlow } from "@/components/zevrae/QuoteFlow";
+import { ContactModal } from "@/components/zevrae/ContactModal";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,7 +23,10 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [open, setOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
   const start = () => setOpen(true);
+  const contact = () => setContactOpen(true);
+
   return (
     <main id="top">
       <Nav onStart={start} />
@@ -32,9 +36,10 @@ function Index() {
       <Reveal onStart={start} />
       <Capabilities />
       <Catalogue />
-      <Finale onStart={start} />
+      <Finale onContact={contact} />
       <Footer />
       <QuoteFlow open={open} onClose={() => setOpen(false)} />
+      <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
     </main>
   );
 }
