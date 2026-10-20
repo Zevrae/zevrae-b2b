@@ -131,6 +131,7 @@ export function QuoteFlow({
             ].join("\n");
 
             if (GOOGLE_SHEET_WEBHOOK_URL) {
+                const inquiryId = `ZEV-${Date.now().toString(36).toUpperCase()}`;
                 await fetch(GOOGLE_SHEET_WEBHOOK_URL, {
                     method: "POST",
                     mode: "no-cors",
@@ -139,18 +140,22 @@ export function QuoteFlow({
                     },
                     body: JSON.stringify({
                         type: "quote",
+                        inquiryId,
                         timestamp: new Date().toISOString(),
                         company: contact.company,
                         name: contact.name,
                         email: contact.email,
                         phone: contact.phone,
                         product: product?.name || "",
-                        fabric: `${config.fabric} (${config.gsm})`,
+                        fabric: config.fabric,
+                        gsm: config.gsm,
                         color: config.color === "Custom" ? config.customColor : config.color,
                         quantities: config.sizes.map((s) => `${s}: ${config.quantities[s] || 0}`).join(", "),
+                        totalUnits: total,
                         total_units: total,
                         printing: requirements.printing || "None",
                         branding: requirements.branding || "None",
+                        additionalRequirements: requirements.additional || "None",
                         additional: requirements.additional || "None",
                     }),
                 });
