@@ -4,6 +4,17 @@ import { ArrowUpRight, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { COLORS, FABRICS, GSM, PRODUCTS, SIZES, filterProducts, type Filters } from "@/lib/catalogue";
 import CardSwap, { Card } from "@/components/cardswap";
+import normalTshirtGroup from "@/assets/products/normal-tshirt-group-photo.webp";
+import oversizedGroup from "@/assets/products/oversized-tshirt-group-photo.webp";
+import poloGroup from "@/assets/products/polo-tshirt-group-photo.webp";
+import hoodiesGroup from "@/assets/products/hoodies-group-photo.webp";
+
+const PRODUCT_GROUP_IMAGES: Record<string, string> = {
+  "t-shirts": normalTshirtGroup,
+  "oversize-t-shirts": oversizedGroup,
+  "polo-t-shirts": poloGroup,
+  "hoodies": hoodiesGroup,
+};
 
 const INITIAL: Filters = { category: "", fabric: "", gsm: "", size: "", color: "" };
 
@@ -69,10 +80,11 @@ export function Catalogue() {
             draggable
           >
             {products.map((p) => {
-              const image =
-                p.slug === "polo-t-shirts"
-                  ? (p.images.find(i => i.color === "White") ?? p.images[0])
-                  : (p.images.find(i => i.color === "Black") ?? p.images[0]);
+              const imageSrc =
+                PRODUCT_GROUP_IMAGES[p.slug] ??
+                (p.slug === "polo-t-shirts"
+                  ? (p.images.find(i => i.color === "White") ?? p.images[0])?.front
+                  : (p.images.find(i => i.color === "Black") ?? p.images[0])?.front);
               const num = String(PRODUCTS.indexOf(p) + 1).padStart(3, "0");
               return (
                 <Card key={p.slug}>
@@ -84,10 +96,10 @@ export function Catalogue() {
                     {/* Image area */}
                     <div className="relative flex-1 overflow-hidden bg-background">
                       <img
-                        src={image?.front}
-                        alt={`${p.name} — front view, ${image?.color}`}
+                        src={imageSrc}
+                        alt={`${p.name} group showcase`}
                         draggable={false}
-                        className="h-full w-full object-contain p-8 transition-transform duration-500 group-hover:scale-105"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
                     {/* Footer */}
