@@ -13,6 +13,7 @@ import { ProductSelectors } from "./ProductSelectors";
 // =============================================================================
 export const OFFICIAL_ZEVRAE_EMAIL = "officialzevrae@gmail.com";
 export const WEB3FORMS_ACCESS_KEY = ""; // e.g. "a1b2c3d4-e5f6-7890-..."
+export const GOOGLE_SHEET_WEBHOOK_URL = ""; // e.g. "https://script.google.com/macros/s/AKfycb.../exec"
 
 const STEPS = ["Product", "Quantities", "Requirements", "Contact", "Review"];
 
@@ -130,6 +131,34 @@ export function QuoteFlow({
         `Phone / WhatsApp: ${contact.phone}`,
       ].join("\n");
 
+      // 1. Post to Google Sheet if configured
+      if (GOOGLE_SHEET_WEBHOOK_URL) {
+        await fetch(GOOGLE_SHEET_WEBHOOK_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            timestamp: new Date().toLocaleString(),
+            product: product?.name ?? "",
+            fabric: config.fabric,
+            gsm: config.gsm,
+            color: config.color === "Custom" ? config.customColor : config.color,
+            quantities: config.sizes.map((s) => `${s}: ${config.quantities[s] || 0}`).join(", "),
+            totalUnits: total,
+            company: contact.company,
+            name: contact.name,
+            phone: contact.phone,
+            email: contact.email,
+            printing: requirements.printing || "None",
+            branding: requirements.branding || "None",
+            additional: requirements.additional || "None",
+          }),
+        });
+      }
+
+      // 2. Post email alert via Web3Forms if configured
       if (WEB3FORMS_ACCESS_KEY) {
         await fetch("https://api.web3forms.com/submit", {
           method: "POST",
@@ -156,8 +185,8 @@ export function QuoteFlow({
             message: messageBody,
           }),
         });
-      } else {
-        // Quick responsive feedback if key is not yet set
+      } else if (!GOOGLE_SHEET_WEBHOOK_URL) {
+        // Quick responsive feedback if neither key is set yet
         await new Promise((resolve) => setTimeout(resolve, 500));
       }
 
