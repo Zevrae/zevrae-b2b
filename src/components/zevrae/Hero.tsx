@@ -44,7 +44,7 @@ export function Hero() {
       const t = (now - start) / 1000;
       mouse.x += (mouse.tx - mouse.x) * 0.04;
       mouse.y += (mouse.ty - mouse.y) * 0.04;
-      const pts: string[] = [];
+      const pts: string[] = []
       for (let i = 0; i <= 60; i++) {
         const x = -40 + (i / 60) * 1520;
         const base = 600 + Math.sin(i * 0.11 + t * 0.5) * 38 + Math.sin(i * 0.05 - t * 0.3) * 60;
