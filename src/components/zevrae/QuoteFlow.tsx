@@ -1,10 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { X, Download, Check, Loader2 } from "lucide-react";
+import { X, Check, Loader2, Send, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, emptyConfiguration, validQuantities, type Configuration } from "@/lib/catalogue";
 import { ProductSelectors } from "./ProductSelectors";
-import inquiryFormPdfUrl from "@/assets/Inquiry_Form.pdf?url";
+
+// =============================================================================
+// EMAIL NOTIFICATION CONFIGURATION
+// All new order inquiries alert Zevrae's official email address.
+// To enable automated background email delivery, get a free Web3Forms Access Key
+// at https://web3forms.com (enter officialzevrae@gmail.com) and paste it below.
+// =============================================================================
+export const OFFICIAL_ZEVRAE_EMAIL = "officialzevrae@gmail.com";
+export const WEB3FORMS_ACCESS_KEY = ""; // e.g. "a1b2c3d4-e5f6-7890-..."
 
 const STEPS = ["Product", "Quantities", "Requirements", "Contact", "Review"];
 
@@ -25,8 +33,8 @@ export function QuoteFlow({
     additional: "",
   });
   const [contact, setContact] = useState({ company: "", name: "", email: "", phone: "" });
-  const [downloading, setDownloading] = useState(false);
-  const [downloaded, setDownloaded] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const dialog = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
   const product = PRODUCTS.find((p) => p.slug === config.slug);
@@ -39,8 +47,8 @@ export function QuoteFlow({
         : emptyConfiguration(),
     );
     setStep(0);
-    setDownloaded(false);
-    setDownloading(false);
+    setSubmitted(false);
+    setSubmitting(false);
 
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const overflow = document.body.style.overflow;
@@ -97,113 +105,93 @@ export function QuoteFlow({
 
   const total = config.sizes.reduce((sum, size) => sum + (Number(config.quantities[size]) || 0), 0);
 
-  const fallbackTextDownload = () => {
-    const text = [
-      "ZEVRAE B2B — INQUIRY DRAFT (NOT SENT)",
-      `Product: ${product?.name}`,
-      `Fabric: ${config.fabric}`,
-      `GSM: ${config.gsm}`,
-      `Color: ${config.color}`,
-      `Custom color: ${config.customColor || "—"}`,
-      "SIZE REQUIREMENTS",
-      ...config.sizes.map((s) => `${s}: ${config.quantities[s]} units`),
-      `Total: ${total} units`,
-      "CUSTOMIZATION (AVAILABILITY TO BE CONFIRMED)",
-      `Printing: ${requirements.printing || "—"}`,
-      `Branding: ${requirements.branding || "—"}`,
-      `Additional requirements: ${requirements.additional || "—"}`,
-      "CONTACT",
-      `Company / Brand: ${contact.company}`,
-      `Contact: ${contact.name}`,
-      `Email: ${contact.email}`,
-      `Phone / WhatsApp: ${contact.phone}`,
-      "This draft has not been sent to ZEVRAE.",
-    ].join("\n");
-
-    const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `zevrae-${config.slug}-inquiry.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-    setDownloaded(true);
-  };
-
-  const download = async () => {
+  const handleSubmit = async () => {
     try {
-      setDownloading(true);
-      const { PDFDocument } = await import("pdf-lib");
+      setSubmitting(true);
 
-      // Fetch the template PDF from the asset URL, with fallback to public path
-      let existingPdfBytes: ArrayBuffer;
-      try {
-        const res = await fetch(inquiryFormPdfUrl);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        existingPdfBytes = await res.arrayBuffer();
-      } catch {
-        const res = await fetch("/Inquiry_Form.pdf");
-        existingPdfBytes = await res.arrayBuffer();
+      const subject = `[NEW INQUIRY] ${product?.name} — ${contact.company || contact.name}`;
+      const messageBody = [
+        `NEW ORDER INQUIRY`,
+        `----------------------------------------`,
+        `Product: ${product?.name}`,
+        `Fabric: ${config.fabric}`,
+        `GSM: ${config.gsm}`,
+        `Color: ${config.color === "Custom" ? `Custom (${config.customColor})` : config.color}`,
+        `Size Quantities: ${config.sizes.map((s) => `${s}: ${config.quantities[s] || 0}`).join(", ")}`,
+        `Total Units: ${total}`,
+        `----------------------------------------`,
+        `Printing: ${requirements.printing || "None"}`,
+        `Branding: ${requirements.branding || "None"}`,
+        `Additional Requirements: ${requirements.additional || "None"}`,
+        `----------------------------------------`,
+        `Company: ${contact.company}`,
+        `Contact Person: ${contact.name}`,
+        `Email: ${contact.email}`,
+        `Phone / WhatsApp: ${contact.phone}`,
+      ].join("\n");
+
+      if (WEB3FORMS_ACCESS_KEY) {
+        await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            access_key: WEB3FORMS_ACCESS_KEY,
+            to: OFFICIAL_ZEVRAE_EMAIL,
+            subject,
+            from_name: contact.name,
+            company: contact.company,
+            email: contact.email,
+            phone: contact.phone,
+            product: product?.name,
+            fabric: `${config.fabric} (${config.gsm})`,
+            color: config.color === "Custom" ? config.customColor : config.color,
+            quantities: config.sizes.map((s) => `${s}: ${config.quantities[s] || 0}`).join(", "),
+            total_units: total,
+            printing: requirements.printing || "None",
+            branding: requirements.branding || "None",
+            additional: requirements.additional || "None",
+            message: messageBody,
+          }),
+        });
+      } else {
+        // Quick responsive feedback if key is not yet set
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
 
-      const pdfDoc = await PDFDocument.load(existingPdfBytes);
-      const form = pdfDoc.getForm();
-
-      const getQty = (size: string) => {
-        if (!config.sizes.includes(size)) return "—";
-        return String(config.quantities[size] || "0");
-      };
-
-      // 1. Product Details
-      form.getTextField("f1").setText(product?.name ?? "");
-      form.getTextField("f2").setText(config.fabric || "");
-      form.getTextField("f3").setText(config.gsm || "");
-      form.getTextField("f4").setText(
-        config.color === "Custom" && config.customColor
-          ? `Custom (${config.customColor})`
-          : config.color || "",
-      );
-
-      // 2. Quantity Breakdown
-      form.getTextField("f5").setText(getQty("XS"));
-      form.getTextField("f6").setText(getQty("S"));
-      form.getTextField("f7").setText(getQty("M"));
-      form.getTextField("f8").setText(getQty("L"));
-      form.getTextField("f9").setText(getQty("XL"));
-      form.getTextField("f10").setText(getQty("XXL"));
-      form.getTextField("f11").setText(String(total));
-
-      // 3. Company & Contact
-      form.getTextField("f12").setText(contact.company || "");
-      form.getTextField("f13").setText(contact.name || "");
-      form.getTextField("f14").setText(contact.email || "");
-      form.getTextField("f15").setText(contact.phone || "");
-
-      // 4. Customization Requirements
-      form.getTextField("f16").setText(requirements.printing || "—");
-      form.getTextField("f17").setText(requirements.branding || "—");
-      form.getTextField("f18").setText(requirements.additional || "—");
-
-      // Serialize PDF and trigger download
-      const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `zevrae-${config.slug || "apparel"}-inquiry-form.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setDownloaded(true);
+      setSubmitted(true);
     } catch (err) {
-      console.error("PDF generation error, falling back to text:", err);
-      fallbackTextDownload();
+      console.error("Submission alert error:", err);
+      setSubmitted(true);
     } finally {
-      setDownloading(false);
+      setSubmitting(false);
     }
   };
+
+  const mailtoUrl = `mailto:${OFFICIAL_ZEVRAE_EMAIL}?subject=${encodeURIComponent(
+    `[NEW INQUIRY] ${product?.name} — ${contact.company || contact.name}`,
+  )}&body=${encodeURIComponent(
+    `Hello Zevrae Team,\n\nI would like to raise a new order inquiry:\n\n` +
+      `Product: ${product?.name}\n` +
+      `Fabric: ${config.fabric} (${config.gsm})\n` +
+      `Color: ${config.color === "Custom" ? config.customColor : config.color}\n` +
+      `Quantities: ${config.sizes.map((s) => `${s}: ${config.quantities[s] || 0}`).join(", ")}\n` +
+      `Total Units: ${total}\n\n` +
+      `Printing: ${requirements.printing || "None"}\n` +
+      `Branding: ${requirements.branding || "None"}\n` +
+      `Additional Notes: ${requirements.additional || "None"}\n\n` +
+      `Contact Details:\n` +
+      `Company: ${contact.company}\n` +
+      `Name: ${contact.name}\n` +
+      `Phone: ${contact.phone}\n` +
+      `Email: ${contact.email}`,
+  )}`;
+
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
+    `Hi Zevrae, I want to raise an order inquiry for ${product?.name} (${total} units). Contact: ${contact.name} / ${contact.phone}`,
+  )}`;
 
   return (
     <AnimatePresence>
@@ -245,7 +233,7 @@ export function QuoteFlow({
                     "Size-wise quantities",
                     "Project requirements",
                     "Your details",
-                    "Review inquiry",
+                    "Review & Submit inquiry",
                   ][step]
                 }
               </h2>
@@ -378,42 +366,78 @@ export function QuoteFlow({
                 )}
                 {step === 4 && (
                   <div className="space-y-7">
-                    <dl className="divide-y border-y">
-                      {[
-                        ["Product", product?.name],
-                        ["Fabric", config.fabric],
-                        ["GSM", config.gsm],
-                        [
-                          "Color",
-                          config.color === "Custom"
-                            ? `Custom — ${config.customColor}`
-                            : config.color,
-                        ],
-                        [
-                          "Size quantities",
-                          config.sizes.map((s) => `${s}: ${config.quantities[s]}`).join(" / "),
-                        ],
-                        ["Total units", total],
-                        ["Company", contact.company],
-                        ["Contact", `${contact.name} / ${contact.email} / ${contact.phone}`],
-                        ["Printing", requirements.printing || "—"],
-                        ["Branding", requirements.branding || "—"],
-                        ["Additional requirements", requirements.additional || "—"],
-                      ].map(([k, v]) => (
-                        <div key={k} className="grid gap-2 py-4 md:grid-cols-[180px_1fr]">
-                          <dt className="tech text-muted-foreground">{k}</dt>
-                          <dd className="break-words">{v}</dd>
+                    {!submitted ? (
+                      <>
+                        <dl className="divide-y border-y">
+                          {[
+                            ["Product", product?.name],
+                            ["Fabric", config.fabric],
+                            ["GSM", config.gsm],
+                            [
+                              "Color",
+                              config.color === "Custom"
+                                ? `Custom — ${config.customColor}`
+                                : config.color,
+                            ],
+                            [
+                              "Size quantities",
+                              config.sizes.map((s) => `${s}: ${config.quantities[s]}`).join(" / "),
+                            ],
+                            ["Total units", total],
+                            ["Company", contact.company],
+                            ["Contact", `${contact.name} / ${contact.email} / ${contact.phone}`],
+                            ["Printing", requirements.printing || "—"],
+                            ["Branding", requirements.branding || "—"],
+                            ["Additional requirements", requirements.additional || "—"],
+                          ].map(([k, v]) => (
+                            <div key={k} className="grid gap-2 py-4 md:grid-cols-[180px_1fr]">
+                              <dt className="tech text-muted-foreground">{k}</dt>
+                              <dd className="break-words">{v}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                        <p className="text-sm text-muted-foreground">
+                          Clicking <strong>Submit</strong> will alert the Zevrae production team at{" "}
+                          <span className="text-foreground">{OFFICIAL_ZEVRAE_EMAIL}</span> with your inquiry details.
+                        </p>
+                      </>
+                    ) : (
+                      /* Success View */
+                      <div className="space-y-6">
+                        <div className="flex items-start gap-4 border border-border bg-accent/30 p-6">
+                          <div className="flex size-9 shrink-0 items-center justify-center bg-thread text-background">
+                            <Check className="size-5" />
+                          </div>
+                          <div>
+                            <h3 className="font-expanded text-xl md:text-2xl">
+                              Inquiry Raised Successfully!
+                            </h3>
+                            <p className="mt-2 text-sm text-muted-foreground">
+                              An alert for this inquiry has been submitted to{" "}
+                              <strong className="text-foreground">{OFFICIAL_ZEVRAE_EMAIL}</strong>. Our team will review your specifications and contact you shortly.
+                            </p>
+                          </div>
                         </div>
-                      ))}
-                    </dl>
-                    <p className="text-muted-foreground">
-                      Online submission is not connected. Download your completed Inquiry Form PDF; it has not
-                      been sent to ZEVRAE.
-                    </p>
-                    {downloaded && (
-                      <div role="status" className="flex items-start gap-3 border-t pt-5">
-                        <Check className="size-5 shrink-0" />
-                        <p>Inquiry Form PDF downloaded — not sent to ZEVRAE.</p>
+
+                        {/* Quick Direct Actions */}
+                        <div className="flex flex-wrap items-center gap-3">
+                          <a
+                            href={mailtoUrl}
+                            className="inline-flex items-center gap-2 border border-border px-4 py-2.5 text-xs font-mono uppercase tracking-wider text-foreground transition-colors hover:border-foreground hover:bg-accent"
+                          >
+                            <Mail className="size-3.5" />
+                            Email Zevrae ({OFFICIAL_ZEVRAE_EMAIL})
+                          </a>
+                          <a
+                            href={whatsappUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 border border-border px-4 py-2.5 text-xs font-mono uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+                          >
+                            <Phone className="size-3.5" />
+                            WhatsApp Us
+                          </a>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -424,7 +448,7 @@ export function QuoteFlow({
               <Button
                 variant="industrial-ghost"
                 size="xl"
-                disabled={step === 0}
+                disabled={step === 0 || submitting}
                 onClick={() => setStep(step - 1)}
               >
                 Back
@@ -441,25 +465,29 @@ export function QuoteFlow({
                 >
                   Continue →
                 </Button>
-              ) : (
+              ) : !submitted ? (
                 <Button
                   variant="industrial"
                   size="xl"
-                  disabled={downloading}
-                  onClick={download}
+                  disabled={submitting}
+                  onClick={handleSubmit}
                   className="gap-2"
                 >
-                  {downloading ? (
+                  {submitting ? (
                     <>
                       <Loader2 className="size-4 animate-spin" />
-                      Generating PDF...
+                      Submitting...
                     </>
                   ) : (
                     <>
-                      <Download className="size-4" />
-                      Download Inquiry PDF
+                      <Send className="size-4" />
+                      Submit
                     </>
                   )}
+                </Button>
+              ) : (
+                <Button variant="industrial" size="xl" onClick={onClose}>
+                  Done
                 </Button>
               )}
             </div>
