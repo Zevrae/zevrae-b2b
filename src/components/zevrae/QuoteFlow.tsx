@@ -341,7 +341,7 @@ export function QuoteFlow({
                     {(
                       [
                         ["company", "Company / Brand"],
-                        ["name", "Contact person"],
+                        ["name", "Name"],
                         ["email", "Email address"],
                         ["phone", "Phone / WhatsApp"],
                       ] as const
