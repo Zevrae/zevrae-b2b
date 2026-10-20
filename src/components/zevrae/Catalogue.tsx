@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { COLORS, FABRICS, GSM, PRODUCTS, SIZES, filterProducts, type Filters } from "@/lib/catalogue";
-import CardSwap, { Card } from "@/components/CardSwap";
+import CardSwap from "@/components/CardSwap.css";
 import normalTshirtGroup from "@/assets/products/normal-tshirt-group-photo.webp";
 import oversizedGroup from "@/assets/products/oversized-tshirt-group-photo.webp";
 import poloGroup from "@/assets/products/polo-tshirt-group-photo.webp";
