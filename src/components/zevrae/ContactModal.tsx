@@ -16,7 +16,7 @@ export interface ContactFormData {
 // Web App (or use a webhook service like SheetDB / Make / Zapier) and paste the
 // endpoint URL below.
 // =============================================================================
-export const GOOGLE_SHEET_WEBHOOK_URL = ""; // e.g. "https://script.google.com/macros/s/AKfycb.../exec"
+export const GOOGLE_SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyyAaeDAOxXi1KxwrgnvEo3mT_ZxZZwRmj6MuqaVTmvcOp9-R8PaReSKy9N5g-WMPM7ew/exec"; 
 
 export function ContactModal({
   open,
