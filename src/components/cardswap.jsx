@@ -12,7 +12,7 @@ import {
 } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { BeachIcon, BridgeIcon, CloudIcon, SunsetIcon } from '@hugeicons/core-free-icons';
-import './CardSwap.css';
+import './cardswap.css';
 
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
