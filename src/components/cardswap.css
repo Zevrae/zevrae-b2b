@@ -49,6 +49,15 @@
   -webkit-backface-visibility: hidden;
 }
 
+/* Prevent native anchor drag from interfering with the card drag gesture */
+.card-swap-slot a,
+.card-swap-slot [role="link"] {
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .card-swap:focus-visible .card-swap-slot[data-front] {
   outline: 2px solid var(--swap-ink);
   outline-offset: 3px;

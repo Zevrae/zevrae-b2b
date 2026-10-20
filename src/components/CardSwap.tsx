@@ -8,15 +8,169 @@ import {
   useImperativeHandle,
   useLayoutEffect,
   useMemo,
-  useRef
+  useRef,
+  type CSSProperties,
+  type HTMLAttributes,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactElement,
+  type ReactNode
 } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { BeachIcon, BridgeIcon, CloudIcon, SunsetIcon } from '@hugeicons/core-free-icons';
-import './Cardswap.css';
+import './CardSwap.css';
 
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
-const THEMES = {
+export interface CardSwapItem {
+  title?: string;
+  image?: string;
+  icon?: ReactNode;
+  alt?: string;
+}
+
+export interface CardSwapHandle {
+  next: () => void;
+  prev: () => void;
+}
+
+export interface CardSwapProps {
+  items?: CardSwapItem[];
+  width?: number;
+  height?: number;
+  cardDistance?: number;
+  verticalDistance?: number;
+  depth?: number;
+  skewAmount?: number;
+  visibleCards?: number;
+  delay?: number;
+  autoplay?: boolean;
+  pauseOnHover?: boolean;
+  draggable?: boolean;
+  speed?: number;
+  bounce?: number;
+  parallax?: number;
+  hoverSpread?: number;
+  dim?: number;
+  cardRadius?: number;
+  intro?: boolean;
+  theme?: 'dark' | 'light';
+  onCardClick?: (index: number) => void;
+  onChange?: (index: number) => void;
+  className?: string;
+  children?: ReactNode;
+}
+
+export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  customClass?: string;
+}
+
+type Axis = 'x' | 'y' | 'z' | 'r' | 'p';
+type Vec = { x: number; y: number };
+type Pose = Record<Axis, number>;
+
+interface Bounds {
+  width: number;
+  height: number;
+  originX: number;
+  originY: number;
+}
+
+interface BoundsInput {
+  width: number;
+  height: number;
+  cardDistance: number;
+  verticalDistance: number;
+  depth: number;
+  skewAmount: number;
+  visible: number;
+  hoverSpread: number;
+}
+
+interface Settings {
+  width: number;
+  height: number;
+  dx: number;
+  dy: number;
+  dz: number;
+  skew: number;
+  visible: number;
+  delay: number;
+  autoplay: boolean;
+  pauseOnHover: boolean;
+  draggable: boolean;
+  speed: number;
+  bounce: number;
+  parallax: number;
+  hoverSpread: number;
+  dim: number;
+  bounds: Bounds;
+  onCardClick?: (index: number) => void;
+  onChange?: (index: number) => void;
+}
+
+interface DeckCard extends Pose {
+  el: HTMLDivElement | null;
+  shade: HTMLSpanElement | null;
+  index: number;
+  pos: number;
+  from: number;
+  hold: number;
+  nudge: number;
+  phase: 'rest' | 'exit' | 'enter' | 'drag';
+  dir: Vec;
+  tilt: number;
+  top: number;
+  under: boolean;
+  v: Pose;
+}
+
+interface DragState {
+  id: number;
+  index: number;
+  startX: number;
+  startY: number;
+  active: boolean;
+  samples: { x: number; y: number; t: number }[];
+}
+
+interface EngineState {
+  order: number[];
+  raf: number;
+  last: number;
+  timer: number;
+  queue: number[];
+  layers: number;
+  scale: number;
+  hovered: boolean;
+  overCard: boolean;
+  inView: boolean;
+  drag: DragState | null;
+  spread: number;
+  spreadV: number;
+  px: number;
+  py: number;
+  pvx: number;
+  pvy: number;
+  tx: number;
+  ty: number;
+  dragged: boolean;
+  autoplay: boolean;
+  delay: number;
+}
+
+interface ShiftOptions {
+  dir?: Vec;
+  tilt?: number;
+  velocity?: Vec;
+}
+
+interface SwapApi {
+  next: () => void;
+  prev: () => void;
+  refresh: () => void;
+}
+
+const THEMES: Record<'dark' | 'light', Record<string, string>> = {
   dark: {
     '--swap-tile': 'linear-gradient(180deg, #3a3644 0%, #27242f 100%)',
     '--swap-tile-edge': 'rgba(255, 255, 255, 0.07)',
@@ -39,7 +193,7 @@ const THEMES = {
   }
 };
 
-const DEFAULT_ITEMS = [
+const DEFAULT_ITEMS: CardSwapItem[] = [
   {
     title: 'Golden hour',
     image: 'https://images.unsplash.com/photo-1514519334989-3d5c8b1a9f91?w=900&q=80&auto=format&fit=crop',
@@ -66,12 +220,21 @@ const PERSPECTIVE = 900;
 const TAU = Math.PI * 2;
 const STEP = 1 / 240;
 const PAD = 32;
-const AXES = ['x', 'y', 'z', 'r', 'p'];
-const DOWN = { x: 0, y: 1 };
+const AXES: Axis[] = ['x', 'y', 'z', 'r', 'p'];
+const DOWN: Vec = { x: 0, y: 1 };
 
-const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-const stackBounds = ({ width, height, cardDistance, verticalDistance, depth, skewAmount, visible, hoverSpread }) => {
+const stackBounds = ({
+  width,
+  height,
+  cardDistance,
+  verticalDistance,
+  depth,
+  skewAmount,
+  visible,
+  hoverSpread
+}: BoundsInput): Bounds => {
   const slope = Math.tan((skewAmount * Math.PI) / 180);
   const spread = 1 + Math.max(0, hoverSpread);
   let minX = Infinity;
@@ -99,7 +262,7 @@ const stackBounds = ({ width, height, cardDistance, verticalDistance, depth, ske
   };
 };
 
-export const Card = forwardRef(({ customClass, className, children, ...rest }, ref) => (
+export const Card = forwardRef<HTMLDivElement, CardProps>(({ customClass, className, children, ...rest }, ref) => (
   <div ref={ref} {...rest} className={['card-swap-card', customClass, className].filter(Boolean).join(' ')}>
     {children}
     <span className="card-swap-card-rim" aria-hidden="true" />
@@ -107,7 +270,7 @@ export const Card = forwardRef(({ customClass, className, children, ...rest }, r
 ));
 Card.displayName = 'Card';
 
-const ItemCard = ({ item }) => (
+const ItemCard = ({ item }: { item: CardSwapItem }) => (
   <Card>
     <div className="card-swap-item">
       {(item.icon || item.title) && (
@@ -125,7 +288,7 @@ const ItemCard = ({ item }) => (
   </Card>
 );
 
-const CardSwap = forwardRef(
+const CardSwap = forwardRef<CardSwapHandle, CardSwapProps>(
   (
     {
       items,
@@ -155,14 +318,14 @@ const CardSwap = forwardRef(
     },
     ref
   ) => {
-    const rootRef = useRef(null);
-    const stageRef = useRef(null);
-    const slotRefs = useRef([]);
-    const shadeRefs = useRef([]);
-    const apiRef = useRef(null);
-    const settingsRef = useRef(null);
+    const rootRef = useRef<HTMLDivElement>(null);
+    const stageRef = useRef<HTMLDivElement>(null);
+    const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const shadeRefs = useRef<(HTMLSpanElement | null)[]>([]);
+    const apiRef = useRef<SwapApi | null>(null);
+    const settingsRef = useRef<Settings>(null as unknown as Settings);
 
-    const cards = useMemo(() => {
+    const cards = useMemo<ReactElement[]>(() => {
       const custom = Children.toArray(children).filter(isValidElement);
       if (custom.length) return custom;
       return (items?.length ? items : DEFAULT_ITEMS).map((item, index) => (
@@ -207,8 +370,8 @@ const CardSwap = forwardRef(
       hoverSpread: Math.max(0, hoverSpread),
       dim: clamp(dim, 0, 1),
       bounds,
-      onCardClick,
-      onChange
+      ...(onCardClick !== undefined && { onCardClick }),
+      ...(onChange !== undefined && { onChange })
     };
 
     useImperativeHandle(
@@ -228,27 +391,30 @@ const CardSwap = forwardRef(
       const now = performance.now();
       const s0 = settingsRef.current;
 
-      const deck = Array.from({ length: count }, (_, index) => ({
-        el: slotRefs.current[index],
-        shade: shadeRefs.current[index],
-        index,
-        pos: index,
-        from: index,
-        hold: 0,
-        nudge: 0,
-        phase: 'rest',
-        dir: { x: 0, y: 1 },
-        tilt: 0,
-        top: 0,
-        under: false,
-        x: 0,
-        y: 0,
-        z: 0,
-        r: 0,
-        p: 0,
-        v: { x: 0, y: 0, z: 0, r: 0, p: 0 }
-      }));
-      const state = {
+      const deck = Array.from(
+        { length: count },
+        (_, index): DeckCard => ({
+          el: slotRefs.current[index] ?? null,
+          shade: shadeRefs.current[index] ?? null,
+          index,
+          pos: index,
+          from: index,
+          hold: 0,
+          nudge: 0,
+          phase: 'rest',
+          dir: { x: 0, y: 1 },
+          tilt: 0,
+          top: 0,
+          under: false,
+          x: 0,
+          y: 0,
+          z: 0,
+          r: 0,
+          p: 0,
+          v: { x: 0, y: 0, z: 0, r: 0, p: 0 }
+        })
+      );
+      const state: EngineState = {
         order: deck.map(card => card.index),
         raf: 0,
         last: 0,
@@ -273,15 +439,15 @@ const CardSwap = forwardRef(
         delay: s0.delay
       };
 
-      const slot = (position, s) => {
+      const slot = (position: number, s: Settings): Pose => {
         const q = Math.min(position, s.visible);
         const spread = 1 + state.spread;
         return { x: q * s.dx * spread, y: -q * s.dy * spread, z: -q * s.dz, r: 0, p: q };
       };
 
-      const clearance = (s, dir) => Math.abs(dir.x) * s.width + Math.abs(dir.y) * s.height + 12;
+      const clearance = (s: Settings, dir: Vec) => Math.abs(dir.x) * s.width + Math.abs(dir.y) * s.height + 12;
 
-      const targetOf = (card, s, time) => {
+      const targetOf = (card: DeckCard, s: Settings, time: number): Pose => {
         if (card.phase === 'exit') {
           const base = slot(0, s);
           const reach = clearance(s, card.dir) * 1.3;
@@ -295,13 +461,13 @@ const CardSwap = forwardRef(
         return slot(Math.max(0, position), s);
       };
 
-      const layerOf = card => {
+      const layerOf = (card: DeckCard) => {
         if (card.top) return 1000 + card.top;
         if (card.under) return 1;
         return 10 + (count - card.pos) * 2;
       };
 
-      const write = (card, s) => {
+      const write = (card: DeckCard, s: Settings) => {
         const { el, shade } = card;
         if (!el) return;
         el.style.transform = `translate3d(${card.x.toFixed(2)}px, ${card.y.toFixed(2)}px, ${card.z.toFixed(2)}px) rotate(${card.r.toFixed(3)}deg) skewY(${s.skew}deg)`;
@@ -318,13 +484,13 @@ const CardSwap = forwardRef(
         else el.removeAttribute('data-front');
       };
 
-      const writeStage = s => {
+      const writeStage = (s: Settings) => {
         const ox = s.bounds.originX + state.px;
         const oy = s.bounds.originY + state.py;
         stage.style.perspectiveOrigin = `${ox.toFixed(2)}px ${oy.toFixed(2)}px`;
       };
 
-      const integrate = (card, target, omega, zeta, dt) => {
+      const integrate = (card: DeckCard, target: Pose, omega: number, zeta: number, dt: number) => {
         const k = omega * omega;
         const d = 2 * zeta * omega;
         const steps = Math.max(1, Math.ceil(dt / STEP));
@@ -338,7 +504,14 @@ const CardSwap = forwardRef(
         }
       };
 
-      const scalar = (value, velocity, target, omega, zeta, dt) => {
+      const scalar = (
+        value: number,
+        velocity: number,
+        target: number,
+        omega: number,
+        zeta: number,
+        dt: number
+      ): [number, number] => {
         const k = omega * omega;
         const d = 2 * zeta * omega;
         const steps = Math.max(1, Math.ceil(dt / STEP));
@@ -352,7 +525,7 @@ const CardSwap = forwardRef(
         return [x, v];
       };
 
-      const frame = time => {
+      const frame = (time: number) => {
         state.raf = 0;
         const s = settingsRef.current;
         const dt = state.last ? Math.min(0.05, (time - state.last) / 1000) : 1 / 60;
@@ -450,23 +623,24 @@ const CardSwap = forwardRef(
         );
       };
 
-      const settleOrder = (time, stagger) => {
+      const settleOrder = (time: number, stagger: number) => {
         state.order.forEach((index, position) => {
           const card = deck[index];
-          if (card.pos === position) return;
+          if (!card || card.pos === position) return;
           card.from = card.pos;
           card.pos = position;
           card.hold = time + Math.max(0, position) * stagger;
         });
       };
 
-      const shift = (direction, options = {}) => {
+      const shift = (direction: number, options: ShiftOptions = {}) => {
         if (count < 2) return;
         const s = settingsRef.current;
         const time = performance.now();
         const stagger = 0.05 / s.speed;
         if (direction > 0) {
-          const front = deck[state.order[0]];
+          const front = deck[state.order[0] ?? -1];
+          if (!front) return;
           state.order = [...state.order.slice(1), front.index];
           settleOrder(time, stagger * 1000);
           front.phase = 'exit';
@@ -481,7 +655,8 @@ const CardSwap = forwardRef(
             front.v.y = options.velocity.y;
           }
         } else {
-          const back = deck[state.order[count - 1]];
+          const back = deck[state.order[count - 1] ?? -1];
+          if (!back) return;
           state.order = [back.index, ...state.order.slice(0, count - 1)];
           settleOrder(time, stagger * 1000);
           back.phase = 'enter';
@@ -493,12 +668,12 @@ const CardSwap = forwardRef(
         deck.forEach(card => {
           if (card.phase === 'rest') card.nudge = 0;
         });
-        s.onChange?.(state.order[0]);
+        s.onChange?.(state.order[0] ?? 0);
         wake();
         schedule();
       };
 
-      const goTo = position => {
+      const goTo = (position: number) => {
         state.queue.forEach(clearTimeout);
         state.queue = [];
         const gap = 110 / settingsRef.current.speed;
@@ -516,12 +691,12 @@ const CardSwap = forwardRef(
         stage.style.transform = `translate(-50%, -50%) scale(${state.scale.toFixed(4)})`;
       };
 
-      const local = event => {
+      const local = (event: PointerEvent) => {
         const box = root.getBoundingClientRect();
         return { x: event.clientX - box.left, y: event.clientY - box.top, w: box.width, h: box.height };
       };
 
-      const onMove = event => {
+      const onMove = (event: PointerEvent) => {
         const s = settingsRef.current;
         if (event.pointerType !== 'touch') {
           const point = local(event);
@@ -530,7 +705,7 @@ const CardSwap = forwardRef(
           state.tx = nx * s.parallax * 0.35 * s.bounds.width;
           state.ty = ny * s.parallax * 0.35 * s.bounds.height;
           state.hovered = true;
-          const overCard = Boolean(event.target.closest?.('[data-swap-index]'));
+          const overCard = Boolean((event.target as Element | null)?.closest?.('[data-swap-index]'));
           if (overCard !== state.overCard) {
             state.overCard = overCard;
             schedule();
@@ -546,12 +721,15 @@ const CardSwap = forwardRef(
           drag.active = true;
           state.dragged = true;
           const card = deck[drag.index];
-          card.phase = 'drag';
-          card.v = { x: 0, y: 0, z: 0, r: 0, p: 0 };
+          if (card) {
+            card.phase = 'drag';
+            card.v = { x: 0, y: 0, z: 0, r: 0, p: 0 };
+          }
           root.setPointerCapture?.(event.pointerId);
           root.style.cursor = 'grabbing';
         }
         const card = deck[drag.index];
+        if (!card) return;
         const base = slot(0, s);
         card.x = base.x + dx;
         card.y = base.y + dy;
@@ -560,14 +738,14 @@ const CardSwap = forwardRef(
         card.p = 0;
         const time = performance.now();
         drag.samples.push({ x: card.x, y: card.y, t: time });
-        while (drag.samples.length > 2 && time - drag.samples[0].t > 90) drag.samples.shift();
+        while (drag.samples.length > 2 && time - drag.samples[0]!.t > 90) drag.samples.shift();
         const progress = clamp(Math.hypot(dx, dy) / (Math.min(s.width, s.height) * 0.3), 0, 1);
-        const next = deck[state.order[1]];
+        const next = deck[state.order[1] ?? -1];
         if (next && next.phase === 'rest') next.nudge = -0.22 * progress;
         wake();
       };
 
-      const onLeave = event => {
+      const onLeave = (event: PointerEvent) => {
         if (event.pointerType === 'touch') return;
         if (state.drag?.active) return;
         state.hovered = false;
@@ -578,14 +756,16 @@ const CardSwap = forwardRef(
         wake();
       };
 
-      const onDown = event => {
+      const onDown = (event: PointerEvent) => {
         const s = settingsRef.current;
         state.dragged = false;
         if (!s.draggable || event.button > 0 || count < 2) return;
-        const target = event.target.closest?.('[data-swap-index]');
+        const target = (event.target as Element | null)?.closest?.('[data-swap-index]');
         if (!target || !root.contains(target)) return;
         const index = Number(target.getAttribute('data-swap-index'));
-        if (index !== state.order[0] || deck[index].phase !== 'rest') return;
+        if (index !== state.order[0] || deck[index]?.phase !== 'rest') return;
+        // Prevent native anchor/text drag and default browser behaviors
+        event.preventDefault();
         state.drag = {
           id: event.pointerId,
           index,
@@ -597,7 +777,7 @@ const CardSwap = forwardRef(
         schedule();
       };
 
-      const onUp = event => {
+      const onUp = (event: PointerEvent) => {
         const drag = state.drag;
         if (!drag || drag.id !== event.pointerId) return;
         state.drag = null;
@@ -609,6 +789,7 @@ const CardSwap = forwardRef(
         root.releasePointerCapture?.(event.pointerId);
         const s = settingsRef.current;
         const card = deck[drag.index];
+        if (!card) return;
         const base = slot(0, s);
         const first = drag.samples[0];
         const lastSample = drag.samples[drag.samples.length - 1];
@@ -620,7 +801,7 @@ const CardSwap = forwardRef(
         const offset = { x: card.x - base.x, y: card.y - base.y };
         const distance = Math.hypot(offset.x, offset.y);
         const fling = Math.hypot(velocity.x, velocity.y);
-        const next = deck[state.order[1]];
+        const next = deck[state.order[1] ?? -1];
         if (next) next.nudge = 0;
         if (event.type !== 'pointercancel' && (distance > Math.min(s.width, s.height) * 0.3 || fling > 700)) {
           const aim = { x: offset.x + velocity.x * 0.12, y: offset.y + velocity.y * 0.12 };
@@ -640,12 +821,12 @@ const CardSwap = forwardRef(
         }
       };
 
-      const onClick = event => {
+      const onClick = (event: MouseEvent) => {
         if (state.dragged) {
           state.dragged = false;
           return;
         }
-        const target = event.target.closest?.('[data-swap-index]');
+        const target = (event.target as Element | null)?.closest?.('[data-swap-index]');
         if (!target || !root.contains(target)) return;
         const index = Number(target.getAttribute('data-swap-index'));
         settingsRef.current.onCardClick?.(index);
@@ -661,8 +842,8 @@ const CardSwap = forwardRef(
         refresh: () => {
           const s = settingsRef.current;
           deck.forEach(card => {
-            const el = slotRefs.current[card.index];
-            const shade = shadeRefs.current[card.index];
+            const el = slotRefs.current[card.index] ?? null;
+            const shade = shadeRefs.current[card.index] ?? null;
             if (el === card.el && shade === card.shade) return;
             card.el = el;
             card.shade = shade;
@@ -701,14 +882,13 @@ const CardSwap = forwardRef(
         schedule();
       });
       intersectionObserver.observe(root);
-      const onDragStart = event => event.preventDefault();
       root.addEventListener('pointermove', onMove);
       root.addEventListener('pointerleave', onLeave);
-      root.addEventListener('pointerdown', onDown);
+      // Use capture phase so child Link/anchor elements cannot stopPropagation
+      root.addEventListener('pointerdown', onDown, true);
       root.addEventListener('pointerup', onUp);
       root.addEventListener('pointercancel', onUp);
       root.addEventListener('click', onClick);
-      root.addEventListener('dragstart', onDragStart);
       document.addEventListener('visibilitychange', onVisibility);
       schedule();
 
@@ -720,11 +900,10 @@ const CardSwap = forwardRef(
         intersectionObserver.disconnect();
         root.removeEventListener('pointermove', onMove);
         root.removeEventListener('pointerleave', onLeave);
-        root.removeEventListener('pointerdown', onDown);
+        root.removeEventListener('pointerdown', onDown, true);
         root.removeEventListener('pointerup', onUp);
         root.removeEventListener('pointercancel', onUp);
         root.removeEventListener('click', onClick);
-        root.removeEventListener('dragstart', onDragStart);
         document.removeEventListener('visibilitychange', onVisibility);
         apiRef.current = null;
       };
@@ -734,7 +913,7 @@ const CardSwap = forwardRef(
       apiRef.current?.refresh();
     });
 
-    const onKeyDown = event => {
+    const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
       if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
         event.preventDefault();
         apiRef.current?.next();
@@ -754,7 +933,7 @@ const CardSwap = forwardRef(
       '--swap-stage-h': `${bounds.height}px`,
       '--swap-ratio': `${bounds.width} / ${bounds.height}`,
       '--swap-radius': `${Math.max(0, cardRadius)}px`
-    };
+    } as CSSProperties;
 
     return (
       <div
