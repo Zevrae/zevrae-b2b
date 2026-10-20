@@ -44,7 +44,7 @@
   pointer-events: auto;
   user-select: none;
   -webkit-user-select: none;
-  touch-action: pan-y;
+  touch-action: none;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }

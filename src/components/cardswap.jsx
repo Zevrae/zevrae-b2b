@@ -701,12 +701,14 @@ const CardSwap = forwardRef(
         schedule();
       });
       intersectionObserver.observe(root);
+      const onDragStart = event => event.preventDefault();
       root.addEventListener('pointermove', onMove);
       root.addEventListener('pointerleave', onLeave);
       root.addEventListener('pointerdown', onDown);
       root.addEventListener('pointerup', onUp);
       root.addEventListener('pointercancel', onUp);
       root.addEventListener('click', onClick);
+      root.addEventListener('dragstart', onDragStart);
       document.addEventListener('visibilitychange', onVisibility);
       schedule();
 
@@ -722,6 +724,7 @@ const CardSwap = forwardRef(
         root.removeEventListener('pointerup', onUp);
         root.removeEventListener('pointercancel', onUp);
         root.removeEventListener('click', onClick);
+        root.removeEventListener('dragstart', onDragStart);
         document.removeEventListener('visibilitychange', onVisibility);
         apiRef.current = null;
       };
