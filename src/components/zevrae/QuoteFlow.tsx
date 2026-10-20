@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { X, Download, Check } from "lucide-react";
+import { X, Download, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, emptyConfiguration, validQuantities, type Configuration } from "@/lib/catalogue";
 import { ProductSelectors } from "./ProductSelectors";
+import inquiryFormPdfUrl from "@/assets/Inquiry_Form.pdf?url";
 
 const STEPS = ["Product", "Quantities", "Requirements", "Contact", "Review"];
 
@@ -24,6 +25,7 @@ export function QuoteFlow({
     additional: "",
   });
   const [contact, setContact] = useState({ company: "", name: "", email: "", phone: "" });
+  const [downloading, setDownloading] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
   const dialog = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
@@ -38,6 +40,7 @@ export function QuoteFlow({
     );
     setStep(0);
     setDownloaded(false);
+    setDownloading(false);
 
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const overflow = document.body.style.overflow;
@@ -94,7 +97,7 @@ export function QuoteFlow({
 
   const total = config.sizes.reduce((sum, size) => sum + (Number(config.quantities[size]) || 0), 0);
 
-  const download = () => {
+  const fallbackTextDownload = () => {
     const text = [
       "ZEVRAE B2B — INQUIRY DRAFT (NOT SENT)",
       `Product: ${product?.name}`,
@@ -121,9 +124,85 @@ export function QuoteFlow({
     const a = document.createElement("a");
     a.href = url;
     a.download = `zevrae-${config.slug}-inquiry.txt`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     setDownloaded(true);
+  };
+
+  const download = async () => {
+    try {
+      setDownloading(true);
+      const { PDFDocument } = await import("pdf-lib");
+
+      // Fetch the template PDF from the asset URL, with fallback to public path
+      let existingPdfBytes: ArrayBuffer;
+      try {
+        const res = await fetch(inquiryFormPdfUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        existingPdfBytes = await res.arrayBuffer();
+      } catch {
+        const res = await fetch("/Inquiry_Form.pdf");
+        existingPdfBytes = await res.arrayBuffer();
+      }
+
+      const pdfDoc = await PDFDocument.load(existingPdfBytes);
+      const form = pdfDoc.getForm();
+
+      const getQty = (size: string) => {
+        if (!config.sizes.includes(size)) return "—";
+        return String(config.quantities[size] || "0");
+      };
+
+      // 1. Product Details
+      form.getTextField("f1").setText(product?.name ?? "");
+      form.getTextField("f2").setText(config.fabric || "");
+      form.getTextField("f3").setText(config.gsm || "");
+      form.getTextField("f4").setText(
+        config.color === "Custom" && config.customColor
+          ? `Custom (${config.customColor})`
+          : config.color || "",
+      );
+
+      // 2. Quantity Breakdown
+      form.getTextField("f5").setText(getQty("XS"));
+      form.getTextField("f6").setText(getQty("S"));
+      form.getTextField("f7").setText(getQty("M"));
+      form.getTextField("f8").setText(getQty("L"));
+      form.getTextField("f9").setText(getQty("XL"));
+      form.getTextField("f10").setText(getQty("XXL"));
+      form.getTextField("f11").setText(String(total));
+
+      // 3. Company & Contact
+      form.getTextField("f12").setText(contact.company || "");
+      form.getTextField("f13").setText(contact.name || "");
+      form.getTextField("f14").setText(contact.email || "");
+      form.getTextField("f15").setText(contact.phone || "");
+
+      // 4. Customization Requirements
+      form.getTextField("f16").setText(requirements.printing || "—");
+      form.getTextField("f17").setText(requirements.branding || "—");
+      form.getTextField("f18").setText(requirements.additional || "—");
+
+      // Serialize PDF and trigger download
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `zevrae-${config.slug || "apparel"}-inquiry-form.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setDownloaded(true);
+    } catch (err) {
+      console.error("PDF generation error, falling back to text:", err);
+      fallbackTextDownload();
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
@@ -328,13 +407,13 @@ export function QuoteFlow({
                       ))}
                     </dl>
                     <p className="text-muted-foreground">
-                      Online submission is not connected. Download this inquiry draft; it has not
+                      Online submission is not connected. Download your completed Inquiry Form PDF; it has not
                       been sent to ZEVRAE.
                     </p>
                     {downloaded && (
                       <div role="status" className="flex items-start gap-3 border-t pt-5">
                         <Check className="size-5 shrink-0" />
-                        <p>Inquiry draft downloaded — not sent to ZEVRAE.</p>
+                        <p>Inquiry Form PDF downloaded — not sent to ZEVRAE.</p>
                       </div>
                     )}
                   </div>
@@ -363,9 +442,24 @@ export function QuoteFlow({
                   Continue →
                 </Button>
               ) : (
-                <Button variant="industrial" size="xl" onClick={download}>
-                  <Download />
-                  Download inquiry
+                <Button
+                  variant="industrial"
+                  size="xl"
+                  disabled={downloading}
+                  onClick={download}
+                  className="gap-2"
+                >
+                  {downloading ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      Generating PDF...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="size-4" />
+                      Download Inquiry PDF
+                    </>
+                  )}
                 </Button>
               )}
             </div>
