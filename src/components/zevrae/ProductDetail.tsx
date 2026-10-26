@@ -10,12 +10,22 @@ import { Footer } from "./Sections";
 export function ProductDetail({ product }: { product: Product }) {
   const [config, setConfig] = useState(() => emptyConfiguration(product.slug));
   const [side, setSide] = useState<"front" | "back">("front");
-  const [photoColor, setPhotoColor] = useState<string>(product.images[0]?.color ?? "White");
+  const [photoColor, setPhotoColor] = useState<string>(product.images[0]?.color ?? "Black");
   const [open, setOpen] = useState(false);
 
-  // Photo preview uses photoColor (Black/White toggle), spec selection uses config.color
-  const image = product.images.find((i) => i.color === photoColor) ?? product.images[0];
+  // Active color: if chosen in config specs, use it; otherwise use photoColor
+  const activeColor =
+    config.color && config.color !== "Custom" && product.images.some((i) => i.color === config.color)
+      ? config.color
+      : photoColor;
+
+  const image = product.images.find((i) => i.color === activeColor) ?? product.images[0];
   const photoColors = product.images.map((i) => i.color);
+
+  const handleSelectColor = (color: string) => {
+    setPhotoColor(color);
+    setConfig((prev) => ({ ...prev, color }));
+  };
 
   const handleBackToCatalogue = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -52,7 +62,7 @@ export function ProductDetail({ product }: { product: Product }) {
             <img
               src={image?.[side]}
               alt={`${product.name} — ${side} view, ${image?.color}`}
-              className="h-full w-full object-contain p-6 md:p-12"
+              className="h-full w-full object-contain p-6 md:p-12 transition-opacity duration-300"
             />
           </div>
           <div className="mt-4 flex flex-wrap gap-3">
@@ -68,28 +78,32 @@ export function ProductDetail({ product }: { product: Product }) {
             ))}
           </div>
           {photoColors.length > 1 && (
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="tech text-sm text-muted-foreground">Photo colour:</span>
-              {photoColors.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setPhotoColor(c)}
-                  aria-pressed={photoColor === c}
-                  title={c}
-                  className={`h-7 w-7 rounded-full border-2 transition-all ${
-                    c === "Black"
-                      ? "bg-neutral-900"
-                      : c === "White"
-                        ? "bg-white"
-                        : "bg-neutral-400"
-                  } ${
-                    photoColor === c
-                      ? "border-foreground ring-2 ring-ring ring-offset-1 ring-offset-background"
-                      : "border-muted-foreground/40"
-                  }`}
-                />
-              ))}
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="tech text-sm text-muted-foreground">Colour preview:</span>
+              <div className="flex flex-wrap items-center gap-2">
+                {photoColors.map((c) => {
+                  const swatchClass = `swatch-${(c.split(" /")[0] ?? "").toLowerCase()}`;
+                  const isSelected = activeColor === c;
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => handleSelectColor(c)}
+                      aria-pressed={isSelected}
+                      title={c}
+                      className={`relative h-7 w-7 rounded-full border-2 transition-all cursor-pointer ${
+                        isSelected
+                          ? "border-foreground ring-2 ring-ring ring-offset-2 ring-offset-background scale-110"
+                          : "border-muted-foreground/40 opacity-70 hover:opacity-100 hover:scale-105"
+                      }`}
+                    >
+                      <span className={`block h-full w-full rounded-full ${swatchClass}`} />
+                      <span className="sr-only">{c}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <span className="tech text-xs text-foreground/80">({activeColor})</span>
             </div>
           )}
           <p className="mt-3 text-sm text-muted-foreground">
@@ -100,7 +114,16 @@ export function ProductDetail({ product }: { product: Product }) {
           <p className="tech text-muted-foreground">Zevrae / Product specification</p>
           <h1 className="font-expanded mt-5 break-words text-4xl md:text-6xl">{product.name}</h1>
           <p className="mb-10 mt-6 text-lg text-muted-foreground">{product.description}</p>
-          <ProductSelectors product={product} value={config} onChange={setConfig} />
+          <ProductSelectors
+            product={product}
+            value={config}
+            onChange={(newConfig) => {
+              setConfig(newConfig);
+              if (newConfig.color && newConfig.color !== "Custom" && product.images.some((i) => i.color === newConfig.color)) {
+                setPhotoColor(newConfig.color);
+              }
+            }}
+          />
           <Button
             variant="industrial"
             size="xl"

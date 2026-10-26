@@ -80,7 +80,12 @@ export function Catalogue() {
             draggable
           >
             {products.map((p) => {
+              const matchedColorImage =
+                filters.color && filters.color !== "Custom"
+                  ? p.images.find(i => i.color === filters.color)?.front
+                  : null;
               const imageSrc =
+                matchedColorImage ??
                 PRODUCT_GROUP_IMAGES[p.slug] ??
                 (p.slug === "polo-t-shirts"
                   ? (p.images.find(i => i.color === "White") ?? p.images[0])?.front
