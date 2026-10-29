@@ -96,7 +96,7 @@
   font-stretch: 125%;
   font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 0.88;
+  line-height: 0.92;
   text-transform: uppercase;
 }
 
@@ -181,27 +181,64 @@
   }
 }
 
-.product-photo { background: var(--product-photo); }
-.swatch-black { background: var(--swatch-black); }
-.swatch-white { background: var(--swatch-white); }
-.swatch-red { background: var(--swatch-red); }
-.swatch-yellow { background: var(--swatch-yellow); }
-.swatch-beige { background: var(--swatch-beige); }
-.catalogue-select, .catalogue-input {
+.product-photo {
+  background: var(--product-photo);
+}
+.swatch-black {
+  background: var(--swatch-black);
+}
+.swatch-white {
+  background: var(--swatch-white);
+}
+.swatch-red {
+  background: var(--swatch-red);
+}
+.swatch-yellow {
+  background: var(--swatch-yellow);
+}
+.swatch-beige {
+  background: var(--swatch-beige);
+}
+.catalogue-select,
+.catalogue-input {
   width: 100%;
   border: 1px solid var(--input);
   background: var(--background);
   color: var(--foreground);
-  padding: 12px;
+  padding: 10px 12px;
   font: inherit;
+  font-size: 16px;
   border-radius: 0;
 }
-.catalogue-select:focus-visible, .catalogue-input:focus-visible {
-  outline: 1px solid var(--ring);
-  outline-offset: 3px;
+@media (min-width: 640px) {
+  .catalogue-select,
+  .catalogue-input {
+    font-size: 0.875rem;
+  }
 }
-.catalogue-input:disabled { opacity: 0.4; }
+.catalogue-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+  padding-right: 36px;
+}
+.catalogue-select:focus-visible,
+.catalogue-input:focus-visible {
+  outline: 1px solid var(--ring);
+  outline-offset: 2px;
+}
+.catalogue-input:disabled {
+  opacity: 0.4;
+}
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after { transition-duration: 0.01ms !important; }
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
 }

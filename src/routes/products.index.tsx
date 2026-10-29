@@ -39,13 +39,17 @@ function ProductsPage() {
 
   return (
     <main>
-      <header className="flex items-center justify-between border-b px-6 py-6 md:px-16">
-        <Link to="/" className="font-expanded text-2xl">
+      <header className="flex items-center justify-between border-b px-4 py-4 sm:px-6 sm:py-6 md:px-16">
+        <Link to="/" className="font-expanded text-xl sm:text-2xl">
           Zevrae
         </Link>
-        <Button variant="industrial-ghost" asChild>
-          <Link to="/" onClick={handleBack} className="inline-flex items-center gap-2">
-            <ArrowLeft className="size-4" />
+        <Button variant="industrial-ghost" size="sm" asChild>
+          <Link
+            to="/"
+            onClick={handleBack}
+            className="inline-flex items-center gap-2 text-xs sm:text-sm"
+          >
+            <ArrowLeft className="size-3.5 sm:size-4" />
             Back to Home
           </Link>
         </Button>

@@ -16,15 +16,10 @@ export interface ContactFormData {
 // Web App (or use a webhook service like SheetDB / Make / Zapier) and paste the
 // endpoint URL below.
 // =============================================================================
-export const GOOGLE_SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyyAaeDAOxXi1KxwrgnvEo3mT_ZxZZwRmj6MuqaVTmvcOp9-R8PaReSKy9N5g-WMPM7ew/exec"; 
+export const GOOGLE_SHEET_WEBHOOK_URL =
+  "https://script.google.com/macros/s/AKfycbyyAaeDAOxXi1KxwrgnvEo3mT_ZxZZwRmj6MuqaVTmvcOp9-R8PaReSKy9N5g-WMPM7ew/exec";
 
-export function ContactModal({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+export function ContactModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [form, setForm] = useState<ContactFormData>({
     name: "",
     phone: "",
@@ -63,7 +58,7 @@ export function ContactModal({
       if (event.key !== "Tab") return;
 
       const nodes = dialog.current?.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), input:not([disabled]), select, textarea, a[href]',
+        "button:not([disabled]), input:not([disabled]), select, textarea, a[href]",
       );
       const focusable = Array.from(nodes ?? []).filter((el) => el.getClientRects().length > 0);
       const first = focusable[0];
@@ -153,17 +148,20 @@ export function ContactModal({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: reducedMotion ? 0 : 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto bg-background/90 p-4 backdrop-blur-md md:p-8"
+          className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto bg-background/90 p-3 sm:p-4 backdrop-blur-md md:p-8"
           role="dialog"
           aria-modal="true"
           aria-labelledby="contact-modal-title"
         >
-          <div className="relative w-full max-w-2xl border border-border bg-card p-6 shadow-2xl md:p-10">
+          <div className="relative my-auto w-full max-w-2xl border border-border bg-card p-5 sm:p-6 md:p-10 shadow-2xl">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-border pb-6">
+            <div className="flex items-center justify-between border-b border-border pb-4 sm:pb-6">
               <div>
-                <span className="tech text-muted-foreground">ZEVRAE / INQUIRY DESK</span>
-                <h2 id="contact-modal-title" className="font-expanded mt-2 text-2xl md:text-4xl">
+                <span className="tech text-xs text-muted-foreground">ZEVRAE / INQUIRY DESK</span>
+                <h2
+                  id="contact-modal-title"
+                  className="font-expanded mt-1.5 sm:mt-2 text-2xl sm:text-3xl md:text-4xl"
+                >
                   Contact Us
                 </h2>
               </div>
@@ -172,21 +170,22 @@ export function ContactModal({
                 size="icon"
                 onClick={onClose}
                 aria-label="Close dialog"
-                className="rounded-none border-border hover:bg-accent"
+                className="size-9 rounded-none border-border hover:bg-accent"
               >
-                <X className="size-5" />
+                <X className="size-4" />
               </Button>
             </div>
 
             {/* Content Body */}
-            <div className="py-8">
+            <div className="py-5 sm:py-8">
               {!submitted ? (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <p className="text-sm text-muted-foreground">
-                    Share your requirements with our production team. Tell us about your project, target quantities, or any questions about your order.
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Share your requirements with our production team. Tell us about your project,
+                    target quantities, or any questions about your order.
                   </p>
 
-                  <div className="grid gap-6 md:grid-cols-2">
+                  <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
                     {/* Full Name */}
                     <label className="block">
                       <span className="tech mb-2 block">
@@ -307,7 +306,8 @@ export function ContactModal({
                         Inquiry Received, {form.name}
                       </h3>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Thank you for reaching out. We have logged your details and our team will get in touch with you shortly.
+                        Thank you for reaching out. We have logged your details and our team will
+                        get in touch with you shortly.
                       </p>
                     </div>
                   </div>
@@ -330,7 +330,9 @@ export function ContactModal({
                       </div>
                       <div className="md:col-span-2">
                         <dt className="tech text-muted-foreground">Regarding Order</dt>
-                        <dd className="whitespace-pre-wrap font-medium text-foreground">{form.orderTopic}</dd>
+                        <dd className="whitespace-pre-wrap font-medium text-foreground">
+                          {form.orderTopic}
+                        </dd>
                       </div>
                     </dl>
                   </div>

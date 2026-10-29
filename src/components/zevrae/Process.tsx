@@ -1,5 +1,11 @@
 import { useRef, useState } from "react";
-import { motion, useMotionValueEvent, useScroll, useTransform, type MotionValue } from "motion/react";
+import {
+  motion,
+  useMotionValueEvent,
+  useScroll,
+  useTransform,
+  type MotionValue,
+} from "motion/react";
 import fabric from "@/assets/fabric.jpg";
 import cut from "@/assets/cut.jpg";
 import tee from "@/assets/tee.jpg";
@@ -8,12 +14,47 @@ import pack from "@/assets/pack.jpg";
 import factory from "@/assets/factory.jpg";
 
 const STAGES = [
-  { n: "01", name: "Fabric", img: fabric, specs: ["100% Cotton / Dry Fit / Polycotton", "GSM — 160 / 170 / 180–200 / 200–220", "Custom colors — on request", "Fabric selection — confirm availability"] },
-  { n: "02", name: "Cut", img: cut, specs: ["Sizes — S / M / L / XL / XXL", "Pattern details — on inquiry", "Measurements — confirm availability", "Pieces — Body / Sleeve / Rib"] },
-  { n: "03", name: "Print", img: tee, specs: ["Printing requirements — on inquiry", "Embroidery — confirm availability"] },
+  {
+    n: "01",
+    name: "Fabric",
+    img: fabric,
+    specs: [
+      "100% Cotton / Dry Fit / Polycotton",
+      "GSM — 160 / 170 / 180–200 / 200–220",
+      "Custom colors — on request",
+      "Fabric selection — confirm availability",
+    ],
+  },
+  {
+    n: "02",
+    name: "Cut",
+    img: cut,
+    specs: [
+      "Sizes — S / M / L / XL / XXL",
+      "Pattern details — on inquiry",
+      "Measurements — confirm availability",
+      "Pieces — Body / Sleeve / Rib",
+    ],
+  },
+  {
+    n: "03",
+    name: "Print",
+    img: tee,
+    specs: ["Printing requirements — on inquiry", "Embroidery — confirm availability"],
+  },
   { n: "04", name: "Build", img: tee, specs: ["Sleeves", "Body", "Collar", "Stitching / Labels"] },
-  { n: "05", name: "Brand", img: label, specs: ["Branding requirements — on inquiry", "Labels / Packaging — confirm availability"] },
-  { n: "06", name: "Pack", img: pack, specs: ["Packaging requirements — on inquiry", "Dispatch schedule — confirm availability"] },
+  {
+    n: "05",
+    name: "Brand",
+    img: label,
+    specs: ["Branding requirements — on inquiry", "Labels / Packaging — confirm availability"],
+  },
+  {
+    n: "06",
+    name: "Pack",
+    img: pack,
+    specs: ["Packaging requirements — on inquiry", "Dispatch schedule — confirm availability"],
+  },
 ];
 
 const THREAD =
@@ -40,10 +81,12 @@ function StageLayer({ i, progress }: { i: number; progress: MotionValue<number> 
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-background/70" />
       <div className="absolute bottom-16 left-6 md:left-16">
         <p className="tech text-muted-foreground">Stage {st.n} / 06</p>
-        <h2 className="font-expanded mt-3 text-[16vw] md:text-[10vw]">{st.name}</h2>
+        <h2 className="font-expanded mt-3 text-[16vw] md:text-[10vw] leading-none">{st.name}</h2>
       </div>
       <ul className="tech absolute right-6 top-28 space-y-3 text-right text-muted-foreground md:right-16">
-        <li className="text-foreground">{st.name} / {st.n}</li>
+        <li className="text-foreground">
+          {st.name} / {st.n}
+        </li>
         {st.specs.map((x) => (
           <li key={x}>{x}</li>
         ))}
@@ -72,25 +115,74 @@ export function Process() {
           <StageLayer key={i} i={i} progress={stageProgress} />
         ))}
 
-        <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
-          <motion.path d={THREAD} fill="none" stroke="var(--thread)" strokeWidth="1.4" className="thread-glow" style={{ pathLength: thread }} />
+        <svg
+          viewBox="0 0 1440 900"
+          preserveAspectRatio="xMidYMid slice"
+          className="pointer-events-none absolute inset-0 h-full w-full"
+          aria-hidden
+        >
+          <motion.path
+            d={THREAD}
+            fill="none"
+            stroke="var(--thread)"
+            strokeWidth="1.4"
+            className="thread-glow"
+            style={{ pathLength: thread }}
+          />
           <motion.g style={{ opacity: teeOpacity }}>
-            <motion.path d={TEE} fill="none" stroke="var(--thread)" strokeWidth="1.2" strokeDasharray="6 5" style={{ pathLength: teeDraw }} />
-            <motion.rect x="670" y="440" height="70" width="100" fill="none" stroke="var(--thread)" strokeWidth="1" style={{ scaleX: printW, originX: 0 }} />
-            <motion.text x="720" y="484" textAnchor="middle" fill="var(--thread)" style={{ opacity: printW, fontFamily: "var(--font-display)", fontWeight: 800, fontStretch: "125%", fontSize: 18 }}>
+            <motion.path
+              d={TEE}
+              fill="none"
+              stroke="var(--thread)"
+              strokeWidth="1.2"
+              strokeDasharray="6 5"
+              style={{ pathLength: teeDraw }}
+            />
+            <motion.rect
+              x="670"
+              y="440"
+              height="70"
+              width="100"
+              fill="none"
+              stroke="var(--thread)"
+              strokeWidth="1"
+              style={{ scaleX: printW, originX: 0 }}
+            />
+            <motion.text
+              x="720"
+              y="484"
+              textAnchor="middle"
+              fill="var(--thread)"
+              style={{
+                opacity: printW,
+                fontFamily: "var(--font-display)",
+                fontWeight: 800,
+                fontStretch: "125%",
+                fontSize: 18,
+              }}
+            >
               ZEVRAE
             </motion.text>
           </motion.g>
         </svg>
 
         <motion.div style={{ opacity: reveal }} className="absolute inset-0 bg-background">
-          <motion.img src={factory} alt="Apparel production visual reference" loading="lazy" style={{ scale: factoryScale }} className="absolute inset-0 h-full w-full object-cover opacity-50" />
+          <motion.img
+            src={factory}
+            alt="Apparel production visual reference"
+            loading="lazy"
+            style={{ scale: factoryScale }}
+            className="absolute inset-0 h-full w-full object-cover opacity-50"
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background" />
-          <p className="tech absolute bottom-10 left-6 text-muted-foreground md:left-16">Production / Visual reference</p>
+          <p className="tech absolute bottom-10 left-6 text-muted-foreground md:left-16">
+            Production / Visual reference
+          </p>
         </motion.div>
 
         <div className="tech absolute left-6 top-28 text-muted-foreground md:left-16">
-          <span className="text-foreground">{String(pct).padStart(3, "0")}</span> / 100 — Follow the thread
+          <span className="text-foreground">{String(pct).padStart(3, "0")}</span> / 100 — Follow the
+          thread
         </div>
       </div>
     </section>

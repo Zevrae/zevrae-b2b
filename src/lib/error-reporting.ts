@@ -15,8 +15,5 @@ export function reportError(error: unknown, context: Record<string, unknown> = {
         : String(error);
   const stack = error instanceof Error ? error.stack : undefined;
 
-  console.error(
-    "[Error boundary]",
-    { message, stack, ...context } as ErrorOptions,
-  );
+  console.error("[Error boundary]", { message, stack, ...context } as ErrorOptions);
 }

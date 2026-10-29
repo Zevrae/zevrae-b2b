@@ -160,28 +160,31 @@ export function Reviews() {
   };
 
   return (
-    <section id="reviews" className="border-t bg-background px-6 py-24 md:px-16 md:py-32">
+    <section
+      id="reviews"
+      className="border-t bg-background px-4 py-16 sm:px-6 sm:py-24 md:px-16 md:py-32"
+    >
       {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-6 pb-12">
+      <div className="flex flex-wrap items-end justify-between gap-4 pb-8 sm:pb-12">
         <div>
-          <p className="tech text-xs uppercase tracking-[0.25em] text-muted-foreground">
+          <p className="tech text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em] text-muted-foreground">
             Client Feedback &bull; Verified Production Runs
           </p>
-          <h2 className="font-expanded mt-3 text-4xl md:text-6xl">
+          <h2 className="font-expanded mt-2 sm:mt-3 text-3xl sm:text-5xl md:text-6xl">
             Trusted by modern brands.
           </h2>
         </div>
-        <p className="tech text-sm text-muted-foreground">
+        <p className="tech text-xs sm:text-sm text-muted-foreground">
           B2B Manufacturing / 5.0 Rating
         </p>
       </div>
 
       {/* Reviews Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
         {reviewsList.map((review) => (
           <SpotlightCard
             key={review.id}
-            className="flex h-full flex-col justify-between border border-border/70 p-6 md:p-8"
+            className="flex h-full flex-col justify-between border border-border/70 p-5 sm:p-6 md:p-8"
             spotlightColor="rgba(255, 255, 255, 0.18)"
             intensity={0.25}
             spotlightSize={280}
@@ -209,15 +212,15 @@ export function Reviews() {
               </div>
 
               {/* Review Text */}
-              <p className="mt-6 text-base leading-relaxed text-foreground/90 md:text-lg">
+              <p className="mt-5 sm:mt-6 text-sm sm:text-base leading-relaxed text-foreground/90 md:text-lg">
                 &ldquo;{review.content}&rdquo;
               </p>
             </div>
 
             {/* Client Info & Product Tag */}
-            <div className="mt-8 border-t border-border/50 pt-5">
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                <span className="tech inline-block bg-accent px-2.5 py-1 text-[11px] text-muted-foreground">
+            <div className="mt-6 sm:mt-8 border-t border-border/50 pt-4 sm:pt-5">
+              <div className="mb-2.5 sm:mb-3 flex flex-wrap items-center gap-2">
+                <span className="tech inline-block bg-accent px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] text-muted-foreground">
                   {review.category}
                 </span>
                 {review.batch && (
@@ -226,10 +229,10 @@ export function Reviews() {
                   </span>
                 )}
               </div>
-              <div className="font-expanded text-base text-foreground">
+              <div className="font-expanded text-sm sm:text-base text-foreground">
                 {review.name}
               </div>
-              <div className="tech mt-1 text-xs text-muted-foreground">
+              <div className="tech mt-1 text-[11px] sm:text-xs text-muted-foreground">
                 {review.role} &bull; <span className="text-foreground">{review.company}</span>
               </div>
             </div>
@@ -240,19 +243,20 @@ export function Reviews() {
       {/* ========================================================================= */}
       {/* OPTION TO WRITE REVIEWS JUST BELOW WHERE WE CAN SEE THE REVIEWS */}
       {/* ========================================================================= */}
-      <div className="mt-14 border-t border-border/70 pt-10">
-        <div className="flex flex-col gap-6 rounded-none border border-border/60 bg-accent/20 p-6 md:p-8">
+      <div className="mt-10 sm:mt-14 border-t border-border/70 pt-8 sm:pt-10">
+        <div className="flex flex-col gap-6 rounded-none border border-border/60 bg-accent/20 p-4 sm:p-6 md:p-8">
           {/* Section banner & trigger */}
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <span className="tech text-xs uppercase tracking-[0.25em] text-muted-foreground">
+              <span className="tech text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em] text-muted-foreground">
                 Production Experience &bull; Client Submissions
               </span>
               <h3 className="font-expanded mt-2 text-2xl md:text-3xl text-foreground">
                 Manufactured with Zevrae?
               </h3>
               <p className="tech mt-1 text-sm text-muted-foreground">
-                Share your feedback on fabric hand-feel, collar ribbing, stitch density, or turnaround times.
+                Share your feedback on fabric hand-feel, collar ribbing, stitch density, or
+                turnaround times.
               </p>
             </div>
 
@@ -295,18 +299,21 @@ export function Reviews() {
                         Review added to session preview!
                       </h4>
                       <p className="text-sm text-muted-foreground leading-relaxed">
-                        Your review has been rendered in the client testimonials above. As an authentic B2B manufacturer, public website listings require authentication against your production invoice. You can download or copy your review draft below to forward to your Zevrae production manager.
+                        Your review has been rendered in the client testimonials above. As an
+                        authentic B2B manufacturer, public website listings require authentication
+                        against your production invoice. You can download or copy your review draft
+                        below to forward to your Zevrae production manager.
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3 border-t border-border/50 pt-5">
+                  <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 border-t border-border/50 pt-5">
                     <Button
                       type="button"
                       variant="industrial"
                       size="lg"
                       onClick={handleCopyDraft}
-                      className="gap-2"
+                      className="w-full sm:w-auto gap-2"
                     >
                       {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
                       {copied ? "Draft Copied to Clipboard" : "Copy Review Draft"}
@@ -316,7 +323,7 @@ export function Reviews() {
                       variant="industrial-ghost"
                       size="lg"
                       onClick={handleDownloadDraft}
-                      className="gap-2"
+                      className="w-full sm:w-auto gap-2"
                     >
                       <Download className="size-4" />
                       Download Draft (.txt)
@@ -337,7 +344,7 @@ export function Reviews() {
                           batch: "",
                         });
                       }}
-                      className="gap-2 text-muted-foreground hover:text-foreground"
+                      className="w-full sm:w-auto gap-2 text-muted-foreground hover:text-foreground"
                     >
                       <RotateCcw className="size-4" />
                       Write Another Review
@@ -460,7 +467,8 @@ export function Reviews() {
                   {/* Batch / PO Reference */}
                   <label className="block">
                     <span className="tech mb-2 block text-xs">
-                      Production Batch / PO # <span className="text-muted-foreground">(Optional, for invoice linking)</span>
+                      Production Batch / PO #{" "}
+                      <span className="text-muted-foreground">(Optional, for invoice linking)</span>
                     </span>
                     <input
                       type="text"
@@ -487,7 +495,9 @@ export function Reviews() {
                       maxLength={1000}
                     />
                     <div className="mt-1 flex justify-between text-[11px] text-muted-foreground tech">
-                      <span>Detailed production feedback helps modern brands evaluate fit & fabric.</span>
+                      <span>
+                        Detailed production feedback helps modern brands evaluate fit & fabric.
+                      </span>
                       <span>{form.content.length}/1000</span>
                     </div>
                   </label>
@@ -499,13 +509,13 @@ export function Reviews() {
                   )}
 
                   {/* Action Buttons */}
-                  <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border/70 pt-5">
-                    <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-4 border-t border-border/70 pt-5">
+                    <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
                       <Button
                         type="submit"
                         variant="industrial"
                         size="lg"
-                        className="gap-2"
+                        className="w-full sm:w-auto gap-2"
                       >
                         <Check className="size-4" />
                         Preview & Add Review
@@ -516,7 +526,7 @@ export function Reviews() {
                         size="lg"
                         onClick={handleDownloadDraft}
                         disabled={!form.name.trim() || !form.content.trim()}
-                        className="gap-2"
+                        className="w-full sm:w-auto gap-2"
                       >
                         <Download className="size-4" />
                         Download Draft
@@ -527,9 +537,13 @@ export function Reviews() {
                         size="lg"
                         onClick={handleCopyDraft}
                         disabled={!form.name.trim() || !form.content.trim()}
-                        className="gap-2"
+                        className="w-full sm:w-auto gap-2"
                       >
-                        {copied ? <Check className="size-4 text-emerald-400" /> : <Copy className="size-4" />}
+                        {copied ? (
+                          <Check className="size-4 text-emerald-400" />
+                        ) : (
+                          <Copy className="size-4" />
+                        )}
                         {copied ? "Copied!" : "Copy Draft"}
                       </Button>
                     </div>

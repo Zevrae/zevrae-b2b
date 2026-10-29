@@ -24,7 +24,7 @@ export function Hero() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
     const id = setInterval(() => {
-      setImgIndex(i => (i + 1) % HERO_IMAGES.length);
+      setImgIndex((i) => (i + 1) % HERO_IMAGES.length);
     }, CYCLE_MS);
     return () => clearInterval(id);
   }, []);
@@ -99,7 +99,11 @@ export function Hero() {
         }}
       />
       {/* Image opacity clamp — applied via mix-blend on the images above */}
-      <div aria-hidden className="absolute inset-0" style={{ background: "rgba(0,0,0,0.56)", mixBlendMode: "multiply" }} />
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{ background: "rgba(0,0,0,0.56)", mixBlendMode: "multiply" }}
+      />
 
       {/* ── Thread SVG — sits above overlays, below text ── */}
       <svg
@@ -116,18 +120,36 @@ export function Hero() {
             <stop offset="1" stopColor="var(--thread)" stopOpacity="0" />
           </linearGradient>
         </defs>
-        <path ref={shadowRef} fill="none" stroke="var(--thread)" strokeOpacity="0.07" strokeWidth="9" transform="translate(0 26)" style={{ filter: "blur(6px)" }} />
-        <path ref={pathRef} fill="none" stroke="url(#threadFade)" strokeWidth="1.3" className="thread-glow" />
+        <path
+          ref={shadowRef}
+          fill="none"
+          stroke="var(--thread)"
+          strokeOpacity="0.07"
+          strokeWidth="9"
+          transform="translate(0 26)"
+          style={{ filter: "blur(6px)" }}
+        />
+        <path
+          ref={pathRef}
+          fill="none"
+          stroke="url(#threadFade)"
+          strokeWidth="1.3"
+          className="thread-glow"
+        />
       </svg>
 
       {/* ── Hero text ── */}
       <div
-        className="relative z-20 flex h-full flex-col justify-center px-6 md:px-16 animate-fade-in [animation-duration:1.6s]"
+        className="relative z-20 flex h-full flex-col justify-center px-4 sm:px-6 md:px-16 animate-fade-in [animation-duration:1.6s]"
         style={{ opacity: visible ? 1 : 0, transition: "opacity 1s ease" }}
       >
-        <h1 className="font-expanded text-[19vw] md:text-[13vw]">Zevrae</h1>
-        <p className="tech mt-6 text-muted-foreground">Apparel manufacturing / Private label / B2B</p>
-        <p className="mt-10 font-display text-lg font-semibold uppercase leading-tight tracking-wide md:text-2xl">
+        <h1 className="font-expanded text-[17vw] sm:text-[15vw] md:text-[13vw] leading-none">
+          Zevrae
+        </h1>
+        <p className="tech mt-4 sm:mt-6 text-xs sm:text-sm text-muted-foreground">
+          Apparel manufacturing / Private label / B2B
+        </p>
+        <p className="mt-6 sm:mt-10 font-display text-base sm:text-xl md:text-2xl font-semibold uppercase leading-tight tracking-wide">
           One thread.
           <br />
           Endless possibilities.
@@ -135,21 +157,24 @@ export function Hero() {
       </div>
 
       {/* ── Bottom labels ── */}
-      <div className="tech absolute bottom-8 left-6 right-6 z-20 flex justify-between text-muted-foreground md:left-16 md:right-16">
-        <span>Follow the thread ↓</span>
+      <div className="tech absolute bottom-12 sm:bottom-8 left-4 right-4 sm:left-6 sm:right-6 md:left-16 md:right-16 z-20 flex justify-between text-muted-foreground">
+        <span className="text-[11px] sm:text-xs">Follow the thread ↓</span>
         <span className="hidden md:inline">EST. MFG / 00</span>
       </div>
 
       {/* ── Image cycle indicator dots ── */}
-      <div className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 gap-2" aria-hidden>
+      <div
+        className="absolute bottom-5 sm:bottom-8 left-1/2 z-20 flex -translate-x-1/2 gap-2"
+        aria-hidden
+      >
         {HERO_IMAGES.map((_, i) => (
           <button
             key={i}
             onClick={() => setImgIndex(i)}
             aria-label={`Hero image ${i + 1}`}
-            className="h-px transition-all duration-500"
+            className="h-1 sm:h-px transition-all duration-500 rounded-full"
             style={{
-              width: i === imgIndex ? "2rem" : "0.75rem",
+              width: i === imgIndex ? "1.75rem" : "0.5rem",
               background: i === imgIndex ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.3)",
             }}
           />

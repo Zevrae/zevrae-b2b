@@ -5,7 +5,9 @@ export interface CardProps extends ComponentPropsWithoutRef<"div"> {
   children?: ReactNode;
 }
 
-export declare const Card: React.ForwardRefExoticComponent<CardProps & React.RefAttributes<HTMLDivElement>>;
+export declare const Card: React.ForwardRefExoticComponent<
+  CardProps & React.RefAttributes<HTMLDivElement>
+>;
 
 export interface CardSwapItem {
   title?: string;
@@ -46,5 +48,7 @@ export interface CardSwapHandle {
   prev: () => void;
 }
 
-declare const CardSwap: React.ForwardRefExoticComponent<CardSwapProps & React.RefAttributes<CardSwapHandle>>;
+declare const CardSwap: React.ForwardRefExoticComponent<
+  CardSwapProps & React.RefAttributes<CardSwapHandle>
+>;
 export default CardSwap;
