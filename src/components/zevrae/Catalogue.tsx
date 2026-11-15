@@ -139,7 +139,7 @@ export function Catalogue() {
                       className="group flex h-full w-full flex-col overflow-hidden"
                     >
                       {/* Image area */}
-                      <div className="relative flex-1 overflow-hidden bg-background">
+                      <div className="relative flex-1 overflow-hidden bg-[#d6d6d6]">
                         <img
                           src={imageSrc}
                           alt={`${p.name} group showcase`}
