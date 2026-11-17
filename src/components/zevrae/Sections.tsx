@@ -15,7 +15,15 @@ export function Nav({ onStart }: Open) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const f = () => setShow(window.scrollY > window.innerHeight * 0.8);
+    let lastY = window.scrollY;
+    const f = () => {
+      const y = window.scrollY;
+      const isMobile = window.innerWidth < 768;
+      const pastHero = y > window.innerHeight * 0.7;
+      const scrollingUp = y < lastY && y > 60;
+      setShow(pastHero || (isMobile && (y > 60 || scrollingUp)));
+      lastY = y;
+    };
     f();
     window.addEventListener("scroll", f, { passive: true });
     return () => window.removeEventListener("scroll", f);
@@ -31,9 +39,9 @@ export function Nav({ onStart }: Open) {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-40 border-b bg-background/85 backdrop-blur-md transition-transform duration-500 ${show ? "translate-y-0" : "-translate-y-full"}`}
+      className={`fixed inset-x-0 top-0 z-40 w-full max-w-full border-b bg-background/85 backdrop-blur-md transition-transform duration-500 overflow-x-clip ${show || mobileMenuOpen ? "translate-y-0" : "-translate-y-full"}`}
     >
-      <nav className="flex h-16 items-center justify-between px-4 sm:px-6 md:px-16">
+      <nav className="flex h-16 w-full max-w-full items-center justify-between px-4 sm:px-6 md:px-16">
         <a href="#top" className="font-expanded text-xl tracking-tight">
           Zevrae
         </a>
@@ -62,7 +70,12 @@ export function Nav({ onStart }: Open) {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="industrial" size="sm" onClick={onStart} className="text-xs">
+          <Button
+            variant="industrial"
+            size="sm"
+            onClick={onStart}
+            className="text-[11px] sm:text-xs px-2.5 sm:px-3"
+          >
             Start a project
           </Button>
 
@@ -71,7 +84,7 @@ export function Nav({ onStart }: Open) {
             type="button"
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="flex size-9 items-center justify-center border border-border text-foreground transition-colors hover:bg-accent md:hidden"
+            className="flex size-9 shrink-0 items-center justify-center border border-border text-foreground transition-colors hover:bg-accent md:hidden"
           >
             {mobileMenuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
           </button>
@@ -86,7 +99,7 @@ export function Nav({ onStart }: Open) {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="border-b bg-background/95 px-4 py-5 backdrop-blur-lg md:hidden"
+            className="border-b bg-background/95 px-4 py-5 backdrop-blur-lg md:hidden overflow-hidden"
           >
             <div className="flex flex-col gap-4">
               {links.map(([l, h]) =>
@@ -148,7 +161,7 @@ export function ScrollThread() {
 
 export function Reveal({ onStart }: Open) {
   return (
-    <section className="relative border-b px-4 py-16 sm:px-6 sm:py-24 md:px-16 md:py-48">
+    <section className="relative border-b px-4 py-16 sm:px-6 sm:py-24 md:px-16 md:py-48 overflow-hidden max-w-full">
       <motion.h2
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -258,7 +271,7 @@ const CAPS = [
 export function Capabilities() {
   const [active, setActive] = useState(0);
   return (
-    <section id="capabilities" className="px-4 py-16 sm:px-6 sm:py-24 md:px-16 md:py-32">
+    <section id="capabilities" className="px-4 py-16 sm:px-6 sm:py-24 md:px-16 md:py-32 overflow-hidden max-w-full">
       <div className="flex items-end justify-between">
         <h2 className="font-expanded text-4xl sm:text-6xl md:text-[6vw]">What we build</h2>
         <p className="tech hidden text-muted-foreground md:block">Capabilities / 04</p>
@@ -328,7 +341,7 @@ type FinaleProps = {
 
 export function Finale({ onContact, onStart }: FinaleProps) {
   return (
-    <section className="bg-bone px-4 py-16 sm:px-6 sm:py-24 text-bone-foreground md:px-16 md:py-48">
+    <section className="bg-bone px-4 py-16 sm:px-6 sm:py-24 text-bone-foreground md:px-16 md:py-48 overflow-hidden max-w-full">
       <h2 className="font-expanded text-4xl sm:text-6xl md:text-[8vw] leading-tight">
         You have the idea.
         <br />
@@ -351,7 +364,7 @@ export function Finale({ onContact, onStart }: FinaleProps) {
 
 export function Footer() {
   return (
-    <footer className="tech flex flex-col justify-between gap-4 border-t px-4 py-8 text-muted-foreground sm:px-6 md:flex-row md:px-16 md:py-10">
+    <footer className="tech flex flex-col justify-between gap-4 border-t px-4 py-8 text-muted-foreground sm:px-6 md:flex-row md:px-16 md:py-10 overflow-hidden max-w-full">
       <span className="font-expanded text-base text-foreground">Zevrae</span>
       <span>Apparel manufacturing / Private label / B2B</span>
       <span>© {new Date().getFullYear()} Zevrae</span>

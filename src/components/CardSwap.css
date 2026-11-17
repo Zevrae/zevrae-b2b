@@ -4,6 +4,8 @@
   height: 100%;
   outline: none;
   -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .card-swap-sizer {

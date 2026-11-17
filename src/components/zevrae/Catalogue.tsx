@@ -38,7 +38,7 @@ export function Catalogue() {
   };
 
   return (
-    <section id="products" className="bg-background px-4 py-16 sm:px-6 sm:py-24 md:px-16 md:py-32">
+    <section id="products" className="bg-background px-4 py-16 sm:px-6 sm:py-24 md:px-16 md:py-32 overflow-hidden max-w-full">
       <div className="flex flex-wrap items-end justify-between gap-4 pb-8 sm:pb-10">
         <h2 className="font-expanded text-4xl sm:text-5xl md:text-7xl">Catalogue</h2>
         <p className="tech text-xs sm:text-sm text-muted-foreground">Products / 04</p>
@@ -100,8 +100,8 @@ export function Catalogue() {
           No products match these requirements.
         </p>
       ) : (
-        <div>
-          <div className="h-[460px] sm:h-[520px] md:h-[560px] w-full">
+        <div className="overflow-hidden max-w-full">
+          <div className="h-[460px] sm:h-[520px] md:h-[560px] w-full overflow-hidden">
             <CardSwap
               cardDistance={40}
               verticalDistance={50}

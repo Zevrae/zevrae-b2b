@@ -162,7 +162,7 @@ export function Reviews() {
   return (
     <section
       id="reviews"
-      className="border-t bg-background px-4 py-16 sm:px-6 sm:py-24 md:px-16 md:py-32"
+      className="border-t bg-background px-4 py-16 sm:px-6 sm:py-24 md:px-16 md:py-32 overflow-hidden max-w-full"
     >
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 pb-8 sm:pb-12">

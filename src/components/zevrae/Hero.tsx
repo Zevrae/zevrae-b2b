@@ -143,7 +143,7 @@ export function Hero() {
         className="relative z-20 flex h-full flex-col justify-center px-4 sm:px-6 md:px-16 animate-fade-in [animation-duration:1.6s]"
         style={{ opacity: visible ? 1 : 0, transition: "opacity 1s ease" }}
       >
-        <h1 className="font-expanded text-[17vw] sm:text-[15vw] md:text-[13vw] leading-none">
+        <h1 className="font-expanded text-[14.5vw] sm:text-[15vw] md:text-[13vw] leading-none">
           Zevrae
         </h1>
         <p className="tech mt-4 sm:mt-6 text-xs sm:text-sm text-muted-foreground">

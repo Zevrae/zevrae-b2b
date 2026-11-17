@@ -39,7 +39,7 @@ function ProductsPage() {
 
   return (
     <main>
-      <header className="flex items-center justify-between border-b px-4 py-4 sm:px-6 sm:py-6 md:px-16">
+      <header className="flex items-center justify-between border-b px-4 py-4 sm:px-6 sm:py-6 md:px-16 w-full max-w-full">
         <Link to="/" className="font-expanded text-xl sm:text-2xl">
           Zevrae
         </Link>
