@@ -1,5 +1,6 @@
 // Normal T-Shirts
 import whiteNormalTshirt from "@/assets/products/white-normal-tshirt.webp";
+import blackNormalTshirt from "@/assets/products/black-normal-tshirt.webp";
 import redNormalTshirt from "@/assets/products/red normal tshirt.webp";
 import yellowNormalTshirt from "@/assets/products/yellow normal tshirt.webp";
 import beigeNormalTshirt from "@/assets/products/beige normal tshirt.webp";
@@ -57,7 +58,7 @@ export const PRODUCTS: Product[] = [
     supportedCustomization: [],
     images: [
       { color: "White", front: whiteNormalTshirt, back: whiteNormalTshirt },
-      { color: "Black", front: blackOversized, back: blackOversized },
+      { color: "Black", front: blackNormalTshirt, back: blackNormalTshirt },
       { color: "Red", front: redNormalTshirt, back: redNormalTshirt },
       { color: "Yellow", front: yellowNormalTshirt, back: yellowNormalTshirt },
       { color: "Beige / Cream", front: beigeNormalTshirt, back: beigeNormalTshirt },
